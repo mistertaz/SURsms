@@ -1,0 +1,39 @@
+# .getignore file for CCS C compiler IDE
+# CCS C Compiler Outputs
+*.hex
+*.cof
+*.esym
+*.lst
+*.osym
+*.cod
+*.sym
+*.xrf
+*.stx
+*.err
+*.kjt
+*.pjt
+*.tre
+*.lst
+*.cce
+
+# Build & Debug Folders
+/Debug/
+/Release/
+/bin/
+/obj/
+
+# Project Metadata & Workspace Files
+# (Remove these if you want to share specific project workspace setups)
+*.dep
+*.wsp
+*.ini
+
+# Temporary and Backup Files
+*.bak
+*.tmp
+*.swp
+*~
+
+# IDE / OS specific
+.DS_Store
+Thumbs.db
