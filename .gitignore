@@ -1,5 +1,5 @@
 # .getignore file for CCS C compiler IDE
-# CCS C Compiler Outputs
+# CCS C Compiler Output files
 *.hex
 *.cof
 *.esym
@@ -15,6 +15,7 @@
 *.tre
 *.lst
 *.cce
+*.[Ss][Tt][Aa]
 
 # Build & Debug Folders
 /Debug/
