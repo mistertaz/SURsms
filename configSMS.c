@@ -3,6 +3,7 @@
  * SURsms configuration management
  *
  * upon entry, look for user typein of three consecutive 'z' characters
+ 
  * (case irrelevant) to signal that configuration is desired.
  * if entry of three z-s is not completed within 15 seconds, exit.
  *
@@ -19,7 +20,7 @@
  // if the argument 'calledFromConfig' is FALSE, this code will process one
  // command and then return. the CSI is implied. (called from elsewhere that CSI occurs)
  //
- // operates much like the SUR in that receipt of <esc> signals the start of a command
+ // operates much like the SUR in that receipt of <esc> signals the start of a command+
  // the <esc> is echoed as a ':', after which the next character or two comprise the command,
  // followed by such data fields as are required.
  //
@@ -154,6 +155,33 @@ void commandProc(BOOLEAN calledFromConfig=FALSE)
             }   
             break;
 
+
+         case 'G':   // set country code for primary cellphone target number, max 7 characters
+            prepareShadowCFGForMods();
+            // receiving field is 8 bytes, so max null-terminated string is 7
+            if (lengthOfCommandTail > 7)
+            {
+               cfgCmdPtr[7] = 0;  // truncate string at 7 bytes
+            }
+            strcpy(&CFG_NVMshadow[cfg_fut][PRPHCCD], cfgCmdPtr) ;    // update future contents, no validity checking at all
+            CFG_NVMshadow[cfg_fut][PRCCLEN] = strlen(&CFG_NVMshadow[cfg_fut][PRPHCCD]); // length of primary number country code string
+            shadowCFG_FutureToCurrent();  // make it so
+            break;
+
+
+         case 'g':   // set country code for secondary cellphone target number, max 7 characters
+            prepareShadowCFGForMods();
+            // receiving field is 8 bytes, so max null-terminated string is 7
+            if (lengthOfCommandTail > 7)
+            {
+               cfgCmdPtr[7] = 0;  // truncate string at 7 bytes
+            }
+             strcpy(&CFG_NVMshadow[cfg_fut][SEPHCCD], cfgCmdPtr) ;    // update future contents, no validity checking at all
+            CFG_NVMshadow[cfg_fut][SECCLEN] = strlen(&CFG_NVMshadow[cfg_fut][SEPHCCD]); // length of primary number country code string
+            shadowCFG_FutureToCurrent();  // make it so
+            break;
+
+
          case 'H':   // select frequency of health report. '0' and '1' are the only valid inputs. while developing, '2' works as well
             ArgCh = *cfgCmdPtr++;   // 0 means once per day, 1 means twice per day, anything else is ignored
             if ((isdigit(ArgCh)) && ((ArgCh == '0') || (ArgCh == '1') || (ArgCh == '2')))
@@ -284,17 +312,24 @@ void commandProc(BOOLEAN calledFromConfig=FALSE)
 
          case 'P':   // set primary cellphone target number (aaaxxxssss)
             prepareShadowCFGForMods();
-            CFG_NVMshadow[cfg_fut][PRPHD1] = *cfgCmdPtr++ ;    // update future contents, no validity checking at all
-            CFG_NVMshadow[cfg_fut][PRPHD2] = *cfgCmdPtr++ ;
-            CFG_NVMshadow[cfg_fut][PRPHD3] = *cfgCmdPtr++ ;
-            CFG_NVMshadow[cfg_fut][PRPHD4] = *cfgCmdPtr++ ;
-            CFG_NVMshadow[cfg_fut][PRPHD5] = *cfgCmdPtr++ ;
-            CFG_NVMshadow[cfg_fut][PRPHD6] = *cfgCmdPtr++ ;
-            CFG_NVMshadow[cfg_fut][PRPHD7] = *cfgCmdPtr++ ;
-            CFG_NVMshadow[cfg_fut][PRPHD8] = *cfgCmdPtr++ ;
-            CFG_NVMshadow[cfg_fut][PRPHD9] = *cfgCmdPtr++ ;
-            CFG_NVMshadow[cfg_fut][PRPHD10] = *cfgCmdPtr++ ;
-            CFG_NVMshadow[cfg_fut][PRPHNUL] = 0 ;     // it's a string, needs null termination
+            // receiving field is 16 bytes, so max null-terminated string is 15
+            if (lengthOfCommandTail > 15)
+            {
+               cfgCmdPtr[15] = 0;  // truncate string at 15 bytes
+            }
+            strcpy(&CFG_NVMshadow[cfg_fut][PRPHNUM], cfgCmdPtr) ;    // update future contents, no validity checking at all
+               CFG_NVMshadow[cfg_fut][PRPHLEN] = strlen(&CFG_NVMshadow[cfg_fut][PRPHNUM]); // length of primary number string
+//!            CFG_NVMshadow[cfg_fut][PRPHNUM] = *cfgCmdPtr++ ;    // update future contents, no validity checking at all
+//!            CFG_NVMshadow[cfg_fut][PRPHD2] = *cfgCmdPtr++ ;
+//!            CFG_NVMshadow[cfg_fut][PRPHD3] = *cfgCmdPtr++ ;
+//!            CFG_NVMshadow[cfg_fut][PRPHD4] = *cfgCmdPtr++ ;
+//!            CFG_NVMshadow[cfg_fut][PRPHD5] = *cfgCmdPtr++ ;
+//!            CFG_NVMshadow[cfg_fut][PRPHD6] = *cfgCmdPtr++ ;
+//!            CFG_NVMshadow[cfg_fut][PRPHD7] = *cfgCmdPtr++ ;
+//!            CFG_NVMshadow[cfg_fut][PRPHD8] = *cfgCmdPtr++ ;
+//!            CFG_NVMshadow[cfg_fut][PRPHD9] = *cfgCmdPtr++ ;
+//!            CFG_NVMshadow[cfg_fut][PRPHD10] = *cfgCmdPtr++ ;
+//!            CFG_NVMshadow[cfg_fut][PRPHNUL] = 0 ;     // it's a string, needs null termination
             shadowCFG_FutureToCurrent();  // make it so
             break;
 
@@ -310,17 +345,23 @@ void commandProc(BOOLEAN calledFromConfig=FALSE)
 
          case 'S':   // set secondary cellphone target number (aaaxxxssss)
             prepareShadowCFGForMods();
-            CFG_NVMshadow[cfg_fut][SEPHD1] = *cfgCmdPtr++ ;    // update future contents, no validity checking at all
-            CFG_NVMshadow[cfg_fut][SEPHD2] = *cfgCmdPtr++ ;
-            CFG_NVMshadow[cfg_fut][SEPHD3] = *cfgCmdPtr++ ;
-            CFG_NVMshadow[cfg_fut][SEPHD4] = *cfgCmdPtr++ ;
-            CFG_NVMshadow[cfg_fut][SEPHD5] = *cfgCmdPtr++ ;
-            CFG_NVMshadow[cfg_fut][SEPHD6] = *cfgCmdPtr++ ;
-            CFG_NVMshadow[cfg_fut][SEPHD7] = *cfgCmdPtr++ ;
-            CFG_NVMshadow[cfg_fut][SEPHD8] = *cfgCmdPtr++ ;
-            CFG_NVMshadow[cfg_fut][SEPHD9] = *cfgCmdPtr++ ;
-            CFG_NVMshadow[cfg_fut][SEPHD10] = *cfgCmdPtr++ ;
-            CFG_NVMshadow[cfg_fut][SEPHNUL] = 0 ;     // it's a string, needs null termination
+            // receiving field is 16 bytes, so max null-terminated string is 15
+            if (lengthOfCommandTail > 15)
+            {
+               cfgCmdPtr[15] = 0;  // truncate string at 15 bytes
+            }
+            strcpy(&CFG_NVMshadow[cfg_fut][SEPHNUM], cfgCmdPtr) ;    // update future contents, no validity checking at all
+//!            CFG_NVMshadow[cfg_fut][SEPHNUM] = *cfgCmdPtr++ ;    // update future contents, no validity checking at all
+//!            CFG_NVMshadow[cfg_fut][SEPHD2] = *cfgCmdPtr++ ;
+//!            CFG_NVMshadow[cfg_fut][SEPHD3] = *cfgCmdPtr++ ;
+//!            CFG_NVMshadow[cfg_fut][SEPHD4] = *cfgCmdPtr++ ;
+//!            CFG_NVMshadow[cfg_fut][SEPHD5] = *cfgCmdPtr++ ;
+//!            CFG_NVMshadow[cfg_fut][SEPHD6] = *cfgCmdPtr++ ;
+//!            CFG_NVMshadow[cfg_fut][SEPHD7] = *cfgCmdPtr++ ;
+//!            CFG_NVMshadow[cfg_fut][SEPHD8] = *cfgCmdPtr++ ;
+//!            CFG_NVMshadow[cfg_fut][SEPHD9] = *cfgCmdPtr++ ;
+//!            CFG_NVMshadow[cfg_fut][SEPHD10] = *cfgCmdPtr++ ;
+//!            CFG_NVMshadow[cfg_fut][SEPHNUL] = 0 ;     // it's a string, needs null termination
             shadowCFG_FutureToCurrent();  // make it so
             break;
 

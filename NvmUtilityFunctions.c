@@ -438,8 +438,14 @@ void defaultShadowCFG_NVM()
    CFG_NVMshadow[cfg_cur][USERAWLOGS] = 0;   // use spreadsheet-ready data not raw
    CFG_NVMshadow[cfg_cur][ALLTAGS] = 0;   // not in promiscuous detection report mode
    CFG_NVMshadow[cfg_cur][PBLPRTHR] = 5;   // pushbutton long-press threshold 5 seconds
-   strcpy(&CFG_NVMshadow[cfg_cur][PRPHD1], "5205550000");   // bogus phone number for primary report
-   strcpy(&CFG_NVMshadow[cfg_cur][SEPHD1], "5205559999");   // bogus phone number for secondary report
+   strcpy(&CFG_NVMshadow[cfg_cur][PRPHNUM], "5205550000");   // bogus phone number for primary report
+   CFG_NVMshadow[cfg_cur][PRPHLEN] = strlen(&CFG_NVMshadow[cfg_cur][PRPHNUM]); // length of primary number string
+   strcpy(&CFG_NVMshadow[cfg_cur][SEPHNUM], "5205559999");   // bogus phone number for secondary report
+   CFG_NVMshadow[cfg_cur][SEPHLEN] = strlen(&CFG_NVMshadow[cfg_cur][SEPHNUM]); // length of secondary number string
+   strcpy(&CFG_NVMshadow[cfg_cur][PRPHCCD], "");   // *empty* string value
+   CFG_NVMshadow[cfg_cur][PRCCLEN] = strlen(&CFG_NVMshadow[cfg_cur][PRPHCCD]); // length of primary number country code string
+   strcpy(&CFG_NVMshadow[cfg_cur][SEPHCCD], "");   // *empty* string value
+   CFG_NVMshadow[cfg_cur][SECCLEN] = strlen(&CFG_NVMshadow[cfg_cur][SEPHCCD]); // length of primary number country code string
    CFG_NVMshadow[cfg_cur][MATCH_T0] = IGNORE_ALL;   // no reporting of tag data Type 0
    CFG_NVMshadow[cfg_cur][MATCH_T1] = IGNORE_ALL;   // no reporting of tag data Type 1
    CFG_NVMshadow[cfg_cur][MATCH_T2] = IGNORE_ALL;   // no reporting of tag data Type 2
@@ -467,11 +473,17 @@ void defaultShadowCFG_NVM()
 //!                                  // it will result in the enqueue forever of the received
 //!                                  // packet. that leak will eventually consume all the packets
 
-#if TAZ_DEBUG > 0  // lets us restore debug-appropriate configuration items without having to run the windows program 
+#if __TAZ_DEBUG > 0  // lets us restore debug-appropriate configuration items without having to run the windows program 
    CFG_NVMshadow[cfg_cur][SECONDARY] = 1; // include secondary report
    CFG_NVMshadow[cfg_cur][DETREPINT] = 0; // detection report every five minutes
-   strcpy(&CFG_NVMshadow[cfg_cur][PRPHD1], "5204057635");   // TAZ android phone number for primary report
-   strcpy(&CFG_NVMshadow[cfg_cur][SEPHD1], "5204047475");   // TAZ iPhone number for secondary report
+   strcpy(&CFG_NVMshadow[cfg_cur][PRPHNUM], "5204057635");   // TAZ android phone number for primary report
+   CFG_NVMshadow[cfg_cur][PRPHLEN] = strlen(&CFG_NVMshadow[cfg_cur][PRPHNUM]); // length of primary number string
+   strcpy(&CFG_NVMshadow[cfg_cur][SEPHNUM], "5204047475");   // TAZ iPhone number for secondary report
+   CFG_NVMshadow[cfg_cur][SEPHLEN] = strlen(&CFG_NVMshadow[cfg_cur][SEPHNUM]); // length of secondary number string
+   strcpy(&CFG_NVMshadow[cfg_cur][PRPHCCD], "+1");   // value for US "+1"
+   CFG_NVMshadow[cfg_cur][PRCCLEN] = strlen(&CFG_NVMshadow[cfg_cur][PRPHCCD]); // length of primary number country code string
+   strcpy(&CFG_NVMshadow[cfg_cur][SEPHCCD], "011");   // value for US, not using plus code
+   CFG_NVMshadow[cfg_cur][SECCLEN] = strlen(&CFG_NVMshadow[cfg_cur][SEPHCCD]); // length of primary number country code string
    CFG_NVMshadow[cfg_cur][DBG_LEV] = 3;   // most debug print enabled
    CFG_NVMshadow[cfg_cur][ALLTAGS] = 1;   // in promiscuous detection report mode, pass all tag types
 #endif

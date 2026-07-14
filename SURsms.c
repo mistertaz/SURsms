@@ -55,8 +55,9 @@
 #define __DEBUG_NVM 0
 
 
-// 'TAZ_DEBUG' adds some configuration defaults used in development
-#define TAZ_DEBUG 0
+// '__TAZ_DEBUG' adds some configuration defaults used in development if non-zero
+#define __TAZ_DEBUG 0
+#warning/information TAZ DEBUG INITS __TAZ_DEBUG
 
 // ***DANGEROUS***
 #define __SUPPRESS_NVM_DEFAULTS 0

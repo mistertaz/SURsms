@@ -408,6 +408,11 @@ BYTE percentStringBufferSub = 0;  // used to assemble string in that buffer
 //!BYTE BTLE_SpyBufSub = 0;
 //!BYTE BTLE_SpyBuf[128];
 
+
+// scratch static storage for phone number string assembly
+BYTE phoneNumberFormationBuffer[32];
+
+
 //
 // we simulate errors sometimes during development
 //

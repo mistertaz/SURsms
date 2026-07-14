@@ -258,12 +258,14 @@ BOOLEAN processDetectionReport()
 #endif
 
       BigLoopMaintenance();  //maintainLCD();
-      xbeeApiSendSMSmessage(&CFG_NVMshadow[cfg_cur][PRPHD1], rdbp);   // primary phone number from configuration CFG_NVM
+      //xbeeApiSendSMSmessage(&CFG_NVMshadow[cfg_cur][PRPHNUM], rdbp);   // primary phone number from configuration CFG_NVM
+      xbeeApiSendSMSmessage(formCompletePrimaryNumber(), rdbp);   // primary phone number from configuration CFG_NVM
       // Send secondary message if enabled, and first digit of number is a real digit 1..9
       BigLoopMaintenance();  //maintainLCD();
-      if ((CFG_NVMshadow[cfg_cur][SECONDARY] != 0) && (isdigit(CFG_NVMshadow[cfg_cur][SEPHD1])))
+      if ((CFG_NVMshadow[cfg_cur][SECONDARY] != 0) && (isdigit(CFG_NVMshadow[cfg_cur][SEPHNUM])))
       {  
-         xbeeApiSendSMSmessage(&CFG_NVMshadow[cfg_cur][SEPHD1], rdbp);   // secondary phone number from configuration CFG_NVM
+         //xbeeApiSendSMSmessage(&CFG_NVMshadow[cfg_cur][SEPHNUM], rdbp);   // secondary phone number from configuration CFG_NVM
+         xbeeApiSendSMSmessage(formCompleteSecondaryNumber(), rdbp);   // secondary phone number from configuration CFG_NVM
       }
       //                          12345678901234567890
       sprintf(DisplayLine2String,"SENT DATA        %3u", blen);
@@ -661,12 +663,14 @@ BOOLEAN processDetectionReport()
 #endif
 
       BigLoopMaintenance();  //maintainLCD();
-      xbeeApiSendSMSmessage(&CFG_NVMshadow[cfg_cur][PRPHD1], rdbp, 3);   // primary phone number from configuration CFG_NVM, message on LCD line 3
+      //xbeeApiSendSMSmessage(&CFG_NVMshadow[cfg_cur][PRPHNUM], rdbp, 3);   // primary phone number from configuration CFG_NVM, message on LCD line 3
+      xbeeApiSendSMSmessage(formCompletePrimaryNumber(), rdbp, 3);   // primary phone number from configuration CFG_NVM, message on LCD line 3
       // Send secondary message if enabled, and first digit of number is a real digit 1..9
       BigLoopMaintenance();  //maintainLCD();
-      if ((CFG_NVMshadow[cfg_cur][SECONDARY] != 0) && (isdigit(CFG_NVMshadow[cfg_cur][SEPHD1])))
+      if ((CFG_NVMshadow[cfg_cur][SECONDARY] != 0) && (isdigit(CFG_NVMshadow[cfg_cur][SEPHNUM])))
       {  
-         xbeeApiSendSMSmessage(&CFG_NVMshadow[cfg_cur][SEPHD1], rdbp, 4);   // secondary phone number from configuration CFG_NVM, message on LCD line 4
+         //xbeeApiSendSMSmessage(&CFG_NVMshadow[cfg_cur][SEPHNUM], rdbp, 4);   // secondary phone number from configuration CFG_NVM, message on LCD line 4
+         xbeeApiSendSMSmessage(formCompleteSecondaryNumber(), rdbp, 4);   // secondary phone number from configuration CFG_NVM, message on LCD line 4
       }
       
       if (applySelectionCriteria)

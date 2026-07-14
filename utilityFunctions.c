@@ -388,6 +388,43 @@ dbpr_code exchangeDebugPrintLevel(dbpr_code newDbprCode)
 }
 
 
+//
+// functions to form phone number strings combining the country code prefix and phone number
+//
+
+
+BYTE *formCompletePrimaryNumber()
+{
+   phoneNumberFormationBuffer[0] = '\0';  // null string for destination, so we can use concatenation everywhere
+   
+   if (CFG_NVMshadow[cfg_cur][PRCCLEN] > 0)  // country code string is not empty and not disabled
+   {
+      // a counry code has been supplied, combine with the number string in scratch buffer
+      strcatb(phoneNumberFormationBuffer, &CFG_NVMshadow[cfg_cur][PRPHCCD]);  // add the country code string
+   }
+
+   strcatb(phoneNumberFormationBuffer, &CFG_NVMshadow[cfg_cur][PRPHNUM]);  // add the phone number string
+   return phoneNumberFormationBuffer;
+}
+
+// 0xff
+
+BYTE *formCompleteSecondaryNumber()
+{
+   phoneNumberFormationBuffer[0] = '\0';  // null string for destination, so we can use concatenation everywhere
+   
+   if (CFG_NVMshadow[cfg_cur][SECCLEN] > 0)  // country code string is not empty and not disabled
+   {
+      // a counry code has been supplied, combine with the number string in scratch buffer
+     strcatb(phoneNumberFormationBuffer, &CFG_NVMshadow[cfg_cur][SEPHCCD]);  // add the country code string
+   }
+
+   strcatb(phoneNumberFormationBuffer, &CFG_NVMshadow[cfg_cur][SEPHNUM]);  // add the phone number string
+   return phoneNumberFormationBuffer;
+}
+
+
+
 
 #if __DEBUG_XBEE
 //

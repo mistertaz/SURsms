@@ -118,7 +118,8 @@ BOOLEAN xbeeRuntimeConfiguration()
    scrsBuf = sballoc();  // allocate a small buffer in which to construct phone number strings
    scrlBuf = lballoc();  // allocate a large buffer in which to construct the wakeup string
    sprintf(scrlBuf, "SMS v%X.%X\r\nRSSI:-%2u  BV:%3.1w", vmsd, vlsd, savedRSSI, BatteryVoltage);  // wakeup string the same for both phones
-   sprintf(scrsBuf, "P#%s", &CFG_NVMshadow[cfg_cur][PRPHD1]);  // primary phone number without <cr>, then AT supplied elsewhere
+   //sprintf(scrsBuf, "P#%s", &CFG_NVMshadow[cfg_cur][PRPHNUM]);  // primary phone number without <cr>, then AT supplied elsewhere
+   sprintf(scrsBuf, "P#%s", formCompletePrimaryNumber());  // primary phone number without <cr>, then AT supplied elsewhere
    scrBool = xbeeCmdOkReply(scrsBuf, 500);  // send the command, must respond with "OK". drops out of command mode
    if (scrBool)  // TRUE reply means error occurred. 
    {
@@ -136,9 +137,10 @@ BOOLEAN xbeeRuntimeConfiguration()
    fprintf(SMSport,"%s\r",scrlBuf);  // there is no response to this message
 
    //   Send secondary message if enabled, and first digit of number is a real digit 1..9
-   if ((CFG_NVMshadow[cfg_cur][SECONDARY] != 0) && (isdigit(CFG_NVMshadow[cfg_cur][SEPHD1])))  
+   if ((CFG_NVMshadow[cfg_cur][SECONDARY] != 0) && (isdigit(CFG_NVMshadow[cfg_cur][SEPHNUM])))  
    {
-      sprintf(scrsBuf, "P#%s", &CFG_NVMshadow[cfg_cur][SEPHD1]);   // secondary phone number from configuration CFG_NVM, without <cr>  AT supplied elsewhere
+      //sprintf(scrsBuf, "P#%s", &CFG_NVMshadow[cfg_cur][SEPHNUM]);   // secondary phone number from configuration CFG_NVM, without <cr>  AT supplied elsewhere
+      sprintf(scrsBuf, "P#%s", formCompleteSecondaryNumber());   // secondary phone number from configuration CFG_NVM, without <cr>  AT supplied elsewhere
       scrBool = xbeeCmdOkReply(scrsBuf, 500);  // send the command, must respond with "OK". drops out of command mode
       if (scrBool)  // TRUE reply means error occurred. 
       {
@@ -195,7 +197,8 @@ BOOLEAN phonyWakeup()
    scrsBuf = sballoc();  // allocate a small buffer in which to construct phone number strings
    scrlBuf = lballoc();  // allocate a large buffer in which to construct the wakeup string
    sprintf(scrlBuf, "SMS v%X.%X\r\nRSSI:-%2u  BV:%3.1w", vmsd, vlsd, savedRSSI, BatteryVoltage);  // wakeup string the same for both phones
-   sprintf(scrsBuf, "P#%s", &CFG_NVMshadow[cfg_cur][PRPHD1]);  // primary phone number without <cr>, then AT supplied elsewhere
+   //sprintf(scrsBuf, "P#%s", &CFG_NVMshadow[cfg_cur][PRPHNUM]);  // primary phone number without <cr>, then AT supplied elsewhere
+   sprintf(scrsBuf, "P#%s", formCompletePrimaryNumber());  // primary phone number without <cr>, then AT supplied elsewhere
    scrBool = xbeeCmdOkReply(scrsBuf, 500);  // send the command, must respond with "OK"
    if (scrBool)  // TRUE reply means error occurred. 
    {
@@ -213,9 +216,10 @@ BOOLEAN phonyWakeup()
    fprintf(SMSport,"%s\r",scrlBuf);  // there is no response to this message
 
    //   Send secondary message if enabled, and first digit of number is a real digit 1..9
-   if ((CFG_NVMshadow[cfg_cur][SECONDARY] != 0) && (isdigit(CFG_NVMshadow[cfg_cur][SEPHD1])))  
+   if ((CFG_NVMshadow[cfg_cur][SECONDARY] != 0) && (isdigit(CFG_NVMshadow[cfg_cur][SEPHNUM])))  
    {
-      sprintf(scrsBuf, "P#%s", &CFG_NVMshadow[cfg_cur][SEPHD1]);   // secondary phone number from configuration CFG_NVM, without <cr>  AT supplied elsewhere
+      //sprintf(scrsBuf, "P#%s", &CFG_NVMshadow[cfg_cur][SEPHNUM]);   // secondary phone number from configuration CFG_NVM, without <cr>  AT supplied elsewhere
+      sprintf(scrsBuf, "P#%s", formCompleteSecondaryNumber());   // secondary phone number from configuration CFG_NVM, without <cr>  AT supplied elsewhere
       scrBool = xbeeCmdOkReply(scrsBuf, 500);  // send the command, must respond with "OK"
       if (scrBool)  // TRUE reply means error occurred. 
       {

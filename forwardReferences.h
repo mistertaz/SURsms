@@ -8,11 +8,14 @@
 //
 
 BYTE *prefixDetectionReportResponse();
+BYTE *formCompletePrimaryNumber();
+BYTE *formCompleteSecondaryNumber();
 BYTE getModemIndicator();
 BYTE gethex();
 BYTE gethex1();
 BYTE read_fltr_nvm(long int);
 BYTE xbeeApiSendAtCommand(BYTE *, U32 x=2000L);
+//BYTE phoneNumberFormationBuffer[];  // scratch static storage for phone number string assembly
 BFATCR *xbeeSendAtCommand(BYTE *, int16 x = 500);
 UW wordqDequeue(WORDQ *);
 BOOLEAN SURCommandParsedReply(BYTE *, SPARSE &x);

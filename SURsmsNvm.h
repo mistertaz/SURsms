@@ -58,44 +58,45 @@ enum eepr {
    USERAWLOGS ,  // addr 07(0x07)  Use old-style format of tag data if non-zero (more/less strict checking??)
    ALLTAGS ,     // addr 08(0x08)  Pass tags normally suppressed: 1-3-5-7 (promiscuous mode)
    PBLPRTHR ,    // addr 09(0x09)  Pushbutton long-press threshold in seconds.
-   EMPTY0A ,     // addr 10(0x0A)  // obsolete, this delay no longer required -->BT_WAIT_CON , // addr 10(0x0A)  wait time in minutes for external BT connection (10..60) default 30. (PIC18: EMPTY)
-   EMPTY0B ,     // addr 11(0x0B)  // obsolete, this delay no longer required -->BT_WAIT_DIS , // addr 11(0x0B)  wait time in minutes to disconnect BT if no activity (10..60) default 30. (PIC18: EMPTY)
-   EMPTY0C ,     // addr 12(0x0C)
-   EMPTY0D ,     // addr 13(0x0D)
-   EMPTY0E ,     // addr 14(0x0E)
-   EMPTY0F ,     // addr 15(0x0F)
-   PRPHD1 ,      // addr 16(0x10)  Primary phone number digit 1
-   PRPHD2 ,      // addr 17(0x11)  Primary phone number digit 2
-   PRPHD3 ,      // addr 18(0x12)  Primary phone number digit 3
-   PRPHD4 ,      // addr 19(0x13)  Primary phone number digit 4
-   PRPHD5 ,      // addr 20(0x14)  Primary phone number digit 5
-   PRPHD6 ,      // addr 21(0x15)  Primary phone number digit 6
-   PRPHD7 ,      // addr 22(0x16)  Primary phone number digit 7
-   PRPHD8 ,      // addr 23(0x17)  Primary phone number digit 8
-   PRPHD9 ,      // addr 24(0x18)  Primary phone number digit 9
-   PRPHD10 ,     // addr 25(0x19)  Primary phone number digit 10
-   PRPHNUL ,     // addr 26(0x1A)  Primary phone number string terminator nul
-   EMPTY1B ,     // addr 27(0x1B)
-   EMPTY1C ,     // addr 28(0x1C)
-   EMPTY1D ,     // addr 29(0x1D)
-   EMPTY1E ,     // addr 30(0x1E)
-   EMPTY1F ,     // addr 31(0x1F)
-   SEPHD1 ,      // addr 32(0x20)  Secondary phone number digit 1
-   SEPHD2 ,      // addr 33(0x21)  Secondary phone number digit 2
-   SEPHD3 ,      // addr 34(0x22)  Secondary phone number digit 3
-   SEPHD4 ,      // addr 35(0x23)  Secondary phone number digit 4
-   SEPHD5 ,      // addr 36(0x24)  Secondary phone number digit 5
-   SEPHD6 ,      // addr 37(0x25)  Secondary phone number digit 6
-   SEPHD7 ,      // addr 38(0x26)  Secondary phone number digit 7
-   SEPHD8 ,      // addr 39(0x27)  Secondary phone number digit 8
-   SEPHD9 ,      // addr 40(0x28)  Secondary phone number digit 9
-   SEPHD10 ,     // addr 41(0x29)  Secondary phone number digit 10
-   SEPHNUL ,     // addr 42(0x2A)  Secondary phone number string terminator nul
-   EMPTY2B ,     // addr 43(0x2B)
-   EMPTY2C ,     // addr 44(0x2C)
-   EMPTY2D ,     // addr 45(0x2D)
-   EMPTY2E ,     // addr 46(0x2E)
-   EMPTY2F ,     // addr 47(0x2F)
+   EMPTY0A ,     // addr 10(0x0A)
+   EMPTY0B ,     // addr 11(0x0B)
+   PRPHLEN ,     // addr 12(0x0C)  length of primary phone number string
+   SEPHLEN ,     // addr 13(0x0D)  length of secondary phone number string
+   PRCCLEN ,     // addr 14(0x0E)  length of primary phone number country code string
+   SECCLEN ,     // addr 15(0x0F)  length of secondary phone number country code string
+   PRPHNUM ,     // addr 16(0x10)  Primary phone number field, size 16 bytes
+   RSRVD11 ,     // addr 17(0x11)  Primary phone number field
+   RSRVD12 ,     // addr 18(0x12)  Primary phone number field
+   RSRVD13 ,     // addr 19(0x13)  Primary phone number field
+   RSRVD14 ,     // addr 20(0x14)  Primary phone number field
+   RSRVD15 ,     // addr 21(0x15)  Primary phone number field
+   RSRVD16 ,     // addr 22(0x16)  Primary phone number field
+   RSRVD17 ,     // addr 23(0x17)  Primary phone number field
+   RSRVD18 ,     // addr 24(0x18)  Primary phone number field
+   RSRVD19 ,     // addr 25(0x19)  Primary phone number field
+   RSRVD1A ,     // addr 26(0x1A)  Primary phone number field 
+   RSRVD1B ,     // addr 27(0x1B)  Primary phone number field 
+   RSRVD1C ,     // addr 28(0x1C)  Primary phone number field 
+   RSRVD1D ,     // addr 29(0x1D)  Primary phone number field 
+   RSRVD1E ,     // addr 30(0x1E)  Primary phone number field 
+   RSRVD1F ,     // addr 31(0x1F)  Primary phone number field 
+
+   SEPHNUM ,     // addr 32(0x20)  Secondary phone number field, size 16 bytes
+   RSRVD21 ,     // addr 33(0x21)  Secondary phone number field
+   RSRVD22 ,     // addr 34(0x22)  Secondary phone number field
+   RSRVD23 ,     // addr 35(0x23)  Secondary phone number field
+   RSRVD24 ,     // addr 36(0x24)  Secondary phone number field
+   RSRVD25 ,     // addr 37(0x25)  Secondary phone number field
+   RSRVD26 ,     // addr 38(0x26)  Secondary phone number field
+   RSRVD27 ,     // addr 39(0x27)  Secondary phone number field
+   RSRVD28 ,     // addr 40(0x28)  Secondary phone number field
+   RSRVD29 ,     // addr 41(0x29)  Secondary phone number field
+   RSRVD2A ,     // addr 42(0x2A)  Secondary phone number field 
+   RSRVD2B ,     // addr 43(0x2B)  Secondary phone number field 
+   RSRVD2C ,     // addr 44(0x2C)  Secondary phone number field 
+   RSRVD2D ,     // addr 45(0x2D)  Secondary phone number field 
+   RSRVD2E ,     // addr 46(0x2E)  Secondary phone number field 
+   RSRVD2F ,     // addr 47(0x2F)  Secondary phone number field 
    EMPTY30 ,     // addr 48(0x30)
    EMPTY31 ,     // addr 49(0x31)
    EMPTY32 ,     // addr 50(0x32)
@@ -128,22 +129,22 @@ enum eepr {
    EMPTY4D ,     // addr 77(0x4D)
    EMPTY4E ,     // addr 78(0x4E)
    EMPTY4F ,     // addr 79(0x4F)
-   EMPTY50 ,     // addr 80(0x50)
-   EMPTY51 ,     // addr 81(0x51)
-   EMPTY52 ,     // addr 82(0x52)
-   EMPTY53 ,     // addr 83(0x53)
-   EMPTY54 ,     // addr 84(0x54)
-   EMPTY55 ,     // addr 85(0x55)
-   EMPTY56 ,     // addr 86(0x56)
-   EMPTY57 ,     // addr 87(0x57)
-   EMPTY58 ,     // addr 88(0x58)
-   EMPTY59 ,     // addr 89(0x59)
-   EMPTY5A ,     // addr 90(0x5A)
-   EMPTY5B ,     // addr 91(0x5B)
-   EMPTY5C ,     // addr 92(0x5C)
-   EMPTY5D ,     // addr 93(0x5D)
-   EMPTY5E ,     // addr 94(0x5E)
-   EMPTY5F ,     // addr 95(0x5F)
+   PRPHCCD ,     // addr 80(0x50)  Primary phone number country code field, size 8 bytes
+   RSRVD51 ,     // addr 81(0x51)  Primary phone number country code field
+   RSRVD52 ,     // addr 82(0x52)  Primary phone number country code field
+   RSRVD53 ,     // addr 83(0x53)  Primary phone number country code field
+   RSRVD54 ,     // addr 84(0x54)  Primary phone number country code field
+   RSRVD55 ,     // addr 85(0x55)  Primary phone number country code field
+   RSRVD56 ,     // addr 86(0x56)  Primary phone number country code field
+   RSRVD57 ,     // addr 87(0x57)  Primary phone number country code field
+   SEPHCCD ,     // addr 88(0x58)  Secondary phone number country code field, size 8 bytes
+   RSRVD59 ,     // addr 89(0x59)  Secondary phone number country code field
+   RSRVD5A ,     // addr 90(0x5A)  Secondary phone number country code field
+   RSRVD5B ,     // addr 91(0x5B)  Secondary phone number country code field
+   RSRVD5C ,     // addr 92(0x5C)  Secondary phone number country code field
+   RSRVD5D ,     // addr 93(0x5D)  Secondary phone number country code field
+   RSRVD5E ,     // addr 94(0x5E)  Secondary phone number country code field
+   RSRVD5F ,     // addr 95(0x5F)  Secondary phone number country code field
    MATCH_T0 ,    // addr 96(0x60)  Detection Type 0 match action
    MATCH_T1 ,    // addr 97(0x61)  Detection Type 1 match action
    MATCH_T2 ,    // addr 98(0x62)  Detection Type 2 match action

@@ -80,10 +80,12 @@ void processHealthReport()
    }
 #endif
 
-   xbeeApiSendSMSmessage(&CFG_NVMshadow[cfg_cur][PRPHD1], hdbp);   // primary phone number from configuration CFG_NVM
-   if ((CFG_NVMshadow[cfg_cur][SECONDARY] != 0) && (isdigit(CFG_NVMshadow[cfg_cur][SEPHD1])))  //   Send secondary message if enabled, and first digit of number is a real digit 1..9
+   //xbeeApiSendSMSmessage(&CFG_NVMshadow[cfg_cur][PRPHNUM], hdbp);   // primary phone number from configuration CFG_NVM
+   xbeeApiSendSMSmessage(formCompletePrimaryNumber(), hdbp);   // primary phone number from configuration CFG_NVM
+   if ((CFG_NVMshadow[cfg_cur][SECONDARY] != 0) && (isdigit(CFG_NVMshadow[cfg_cur][SEPHNUM])))  //   Send secondary message if enabled, and first digit of number is a real digit 1..9
    {
-      xbeeApiSendSMSmessage(&CFG_NVMshadow[cfg_cur][SEPHD1], hdbp);   // secondary phone number from configuration CFG_NVM
+      //xbeeApiSendSMSmessage(&CFG_NVMshadow[cfg_cur][SEPHNUM], hdbp);   // secondary phone number from configuration CFG_NVM
+      xbeeApiSendSMSmessage(formCompleteSecondaryNumber(), hdbp);   // secondary phone number from configuration CFG_NVM
    }
    
    lbfree(hdbp);  // return the buffer to the pool.  this can only be a large buffer
