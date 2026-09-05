@@ -57,17 +57,32 @@ void timer2Isr()
    ++uptime_milliseconds;
    ++divideBy1000;  // also maintain the uptime-seconds count.
    if (divideBy1000 > 999)
-      {
-         divideBy1000 = 0;
-         ++uptime_seconds;
-         FlagHalfHz = !FlagHalfHz;
-      }
+   {
+      divideBy1000 = 0;
+      ++uptime_seconds;
+      FlagHalfHz = !FlagHalfHz;
+   }
    ++divideBy500;  // also maintain the half-second flag
    if (divideBy500 > 499)
-      {
-         divideBy500 = 0;
-         FlagOneHz = !FlagOneHz;
-      }
+   {
+      divideBy500 = 0;
+      FlagOneHz = !FlagOneHz;
+      
+      //#######################################################################
+      // EXPERIMENT: read RTC values and update clock items, every 500 mS
+      rtc_read(&datetime);  // set the running date & time structure
+      //dateTimeNeedsUpdate = FALSE;  // show we did this <-- done by the caller
+      SecondBin = datetime.tm_sec;
+      SecondBCD = hex2bcd(SecondBin);  // compute the separate values based on structure just obtained
+      MinuteBin = datetime.tm_min;
+      MinuteBCD = hex2bcd(MinuteBin);
+      HourBin = datetime.tm_hour;
+      HourBCD = hex2bcd(HourBin);
+      DayBCD = hex2bcd(datetime.tm_mday);
+      MonthBCD = hex2bcd(datetime.tm_mon);
+      YearBCD = hex2bcd(datetime.tm_year);
+      //#######################################################################
+   }
    
    // allow for periodic execution of quick tasks
    needTickTask = TRUE;  // trigger a tick task next big loop execution
@@ -88,8 +103,10 @@ U32 uptimeSeconds()
 }      
 
 
+
+
 //
-// called every one-millisecond timer tick.
+// called after each one-millisecond timer tick.
 // runs at task level, not in the timer ISR.
 //
 // employs counter prescaling to achieve lower frequencies for some items
@@ -103,7 +120,7 @@ void tickTask()
       DebouncePb();  // call the debouncing code
    }
 
-   // we're going to flag updating for the RTC time/date values
+   // we're going to flag updating for the Big Loop
    // and the LCD display of the time to occur every 250 mS.
    // to do this, we're going to time an interval of 125 mS and
    // alternate the action we take each time it occurs.
@@ -119,7 +136,7 @@ void tickTask()
       }
       else
       {
-         dateTimeNeedsUpdate = TRUE;
+         BigLoopPeriodicUpdate = TRUE;
       }
    }
 }

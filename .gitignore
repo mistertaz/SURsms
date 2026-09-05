@@ -3,6 +3,7 @@
 *.hex
 *.cof
 *.esym
+*.xsym
 *.lst
 *.osym
 *.cod

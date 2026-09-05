@@ -193,6 +193,11 @@ void preConfigInit()
   
    buttonCycled(TRUE);  // initialize the switch debouncing code in the app
    
+   // other miscellaneous string initializations
+   strcpy(savedAPN, "<unknown>");  // default string saved, indicates some error occurred
+   strcpy(savedMNO, "<unknown>");  // default string saved, indicates some error occurred
+   strcpy(savedWakeupMessage, "<uninitialized>");  // default string saved, indicates some error occurred
+   
 }
 
 
@@ -326,6 +331,14 @@ void postConfigInit()
       {
          // set status indicating modem is up
          setModemActive();
+         
+         // send the wakeup SMS message(s)
+         xbeeApiSendSMSmessage(formCompletePrimaryNumber(), savedWakeupMessage);   // primary phone number from configuration CFG_NVM
+         if ((CFG_NVMshadow[cfg_cur][SECONDARY] != 0) && (isdigit(CFG_NVMshadow[cfg_cur][SEPHNUM])))  //   Send secondary message if enabled, and first digit of number is a real digit 1..9
+         {
+            xbeeApiSendSMSmessage(formCompleteSecondaryNumber(), savedWakeupMessage);   // secondary phone number from configuration CFG_NVM
+         }
+         
          
          // 'shut down' modem. this means place it into whichever low power mode is configured.
          appShutDownModem();  // unrecoverable packet parse after this

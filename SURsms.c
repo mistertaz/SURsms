@@ -42,13 +42,13 @@
 #define __DEBUG_MISC 1 //0
 #define __DEBUG_LCD 0
 #define __DEBUG_BTLE 0
-#define __DEBUG_XBEE 1 //0
+#define __DEBUG_XBEE 0
 #define __DEBUG_XBEE_API 0
-#define __DEBUG_XBEE_API_PKT 1 //0
+#define __DEBUG_XBEE_API_PKT 0
 #define __DEBUG_XBEE_API_SMS 0
 #define __DEBUG_QMGR 0
 #define __DEBUG_BMGR 0
-#define __DEBUG_DETREP 1 //0
+#define __DEBUG_DETREP 0
 #define __DEBUG_HLTHREP 0
 #define __DEBUG_SURCOM 0
 #define __DEBUG_CRC 0
@@ -164,6 +164,7 @@ BYTE const vlsd = (VERSION % 16);
 #include "crcSMS.c"
 #include "configSMS.c"
 #include "uptimeTimer2.c"  // put this here 
+///#include "tickTask.c"
 #include "utilityFunctions.c"  // common functions code
 #include "NvmUtilityFunctions.c"
 #include "SURCommFunctions.c"

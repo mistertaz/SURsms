@@ -136,9 +136,9 @@ BOOLEAN processDetectionReport()
    // query SUR for time-of-day as communication check.
 
    // query SUR for version info and stored record count
-   BigLoopMaintenance();  //maintainLCD();
+   BigLoopMaintenance();
    newRecordCount = getSurVersAndRc();
-   BigLoopMaintenance();  //maintainLCD();
+   BigLoopMaintenance();
    if (newRecordCount < 0)   // error fetching version and record count
    {
       //                         12345678901234567890
@@ -185,7 +185,7 @@ BOOLEAN processDetectionReport()
    // query SUR for data records
    //
    sprintf(cmdp, "%c%1X", SUR_query_cmd, (int)newRecordCount);  // encode command character and hexadecimal record count in common buffer
-   BigLoopMaintenance();  //maintainLCD();
+   BigLoopMaintenance();
    // capture detection response strings in parsed data buffer
    if (!SURCommandParsedReply(cmdp, SURstrings)) // read failed
    {
@@ -257,11 +257,11 @@ BOOLEAN processDetectionReport()
       }
 #endif
 
-      BigLoopMaintenance();  //maintainLCD();
+      BigLoopMaintenance();
       //xbeeApiSendSMSmessage(&CFG_NVMshadow[cfg_cur][PRPHNUM], rdbp);   // primary phone number from configuration CFG_NVM
       xbeeApiSendSMSmessage(formCompletePrimaryNumber(), rdbp);   // primary phone number from configuration CFG_NVM
       // Send secondary message if enabled, and first digit of number is a real digit 1..9
-      BigLoopMaintenance();  //maintainLCD();
+      BigLoopMaintenance();
       if ((CFG_NVMshadow[cfg_cur][SECONDARY] != 0) && (isdigit(CFG_NVMshadow[cfg_cur][SEPHNUM])))
       {  
          //xbeeApiSendSMSmessage(&CFG_NVMshadow[cfg_cur][SEPHNUM], rdbp);   // secondary phone number from configuration CFG_NVM
@@ -344,6 +344,9 @@ BOOLEAN processDetectionReport()
    // 
    for (int ll = 0 ; ll < newRecordCount ; ll++)
    {
+#if __DEBUG_DETREP
+      int kStringLen;
+#endif
       BigLoopMaintenance();
       
       //
@@ -355,10 +358,9 @@ BOOLEAN processDetectionReport()
 #if __DEBUG_DETREP
       if (dbpEnabled(LEV3))
       {
-         int k;
          printf(dpo,"\r\ninput line [%d] -->|%s|<--", ll+1, ldbp);
-         k = strlenb(ldbp)+2;
-         dumpToHost((BYTE *)ldbp, k);  // show data before tokenizing
+         kStringLen = strlenb(ldbp)+2;
+         dumpToHost((BYTE *)ldbp, kStringLen);  // show data before tokenizing
       }
 #endif
 
@@ -371,9 +373,8 @@ BOOLEAN processDetectionReport()
 #if __DEBUG_DETREP
       if (dbpEnabled(LEV3))
       {
-         int k;
          printf(dpo,"\r\ntokenizes to:");
-         dumpToHost((BYTE *)ldbp, k);  // show data after tokenizing
+         dumpToHost((BYTE *)ldbp, kStringLen);  // show data after tokenizing
          printf(dpo,"P1 Rec# -->|%s|<--\r\n", P1);
          printf(dpo,"P2 Time -->|%s|<--\r\n", P2);
          printf(dpo,"P3 Date -->|%s|<--\r\n", P3);
@@ -662,11 +663,11 @@ BOOLEAN processDetectionReport()
       }
 #endif
 
-      BigLoopMaintenance();  //maintainLCD();
+      BigLoopMaintenance();
       //xbeeApiSendSMSmessage(&CFG_NVMshadow[cfg_cur][PRPHNUM], rdbp, 3);   // primary phone number from configuration CFG_NVM, message on LCD line 3
       xbeeApiSendSMSmessage(formCompletePrimaryNumber(), rdbp, 3);   // primary phone number from configuration CFG_NVM, message on LCD line 3
       // Send secondary message if enabled, and first digit of number is a real digit 1..9
-      BigLoopMaintenance();  //maintainLCD();
+      BigLoopMaintenance();
       if ((CFG_NVMshadow[cfg_cur][SECONDARY] != 0) && (isdigit(CFG_NVMshadow[cfg_cur][SEPHNUM])))
       {  
          //xbeeApiSendSMSmessage(&CFG_NVMshadow[cfg_cur][SEPHNUM], rdbp, 4);   // secondary phone number from configuration CFG_NVM, message on LCD line 4

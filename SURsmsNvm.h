@@ -205,5 +205,5 @@ enum eepr {
 
    
 
-#endif  // _sursms24nvm_h
+#endif  // _sursmsnvm_h
 

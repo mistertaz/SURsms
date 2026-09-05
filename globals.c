@@ -51,6 +51,7 @@ BOOLEAN xbeeFailedConfiguration = FALSE;  // any command that fails to provide a
 // most recently fetched RSSI value, and uptime when that occurred
 BYTE savedRSSI = 0x99;  // x99 is an invalid value
 U32 savedRSSI_At = 0;  // timestamp of saved RSSI number, allows determination of staleness
+BOOLEAN responseRSSIpending = FALSE;  // waiting for RSSI response in API
 
 // string handling buffers and control structures
 
@@ -206,7 +207,7 @@ BOOLEAN updateLcdNow = FALSE;  // set in ISR when display needs updating
 
 rtc_time_t datetime;  // automatically-maintained date-and-time structure using binary numbers
 
-BOOLEAN dateTimeNeedsUpdate = FALSE;  // per-sample structure update flag
+BOOLEAN BigLoopPeriodicUpdate = FALSE;  // per-sample structure update flag
 
 // automatically-maintained time-and-date variables, in BCD representation.
 // these are used in unexpected places like setting the touch-time clock, so be careful.
@@ -412,7 +413,18 @@ BYTE percentStringBufferSub = 0;  // used to assemble string in that buffer
 // scratch static storage for phone number string assembly
 BYTE phoneNumberFormationBuffer[32];
 
+// most recently fetched APN (Access Point Name) string value, and uptime when that occurred
+BYTE savedAPN[128];  // documentation is ambiguous. can be 100 characters, I think. save as null-terminated string
+U32 savedAPN_At = 0;  // timestamp of saved APN, allows determination of staleness
 
+// most recently fetched MNO (Mobile Network Operator) string value, and uptime when that occurred
+BYTE savedMNO[128];  // documentation is ambiguous. can be 100 characters, I think. save as null-terminated string
+U32 savedMNO_At = 0;  // timestamp of saved MNO, allows determination of staleness
+
+// SMS message sent at initialization, shows version, RSSI, Battery Voltage, APN. save as null-=terminated string.
+BYTE savedWakeupMessage[128];
+
+//
 //
 // we simulate errors sometimes during development
 //

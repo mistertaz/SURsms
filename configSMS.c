@@ -130,6 +130,11 @@ void commandProc(BOOLEAN calledFromConfig=FALSE)
       // order these command functions alphabetically, all upper-case before all lower-case or non-printing
       switch (CommandCh)
       {
+         case 'A':   // return the Access Point Name discovered at system initialization time. It's a null-terminated string
+            printf(hpo, "%s\r\n", savedAPN);
+            break;
+
+
          case 'D':   // select frequency of detection report. '0' to '4' are valid inputs, anything else is ignored
             ArgCh = *cfgCmdPtr++;   // out of range value is ignored
             if ((isdigit(ArgCh)) && (ArgCh >= '0') && (ArgCh <= '4'))
@@ -438,6 +443,11 @@ void commandProc(BOOLEAN calledFromConfig=FALSE)
             break;
 
                
+         case 'a':   // return the Mobile Network Operator discovered at system initialization time. It's a null-terminated string
+            printf(hpo, "%s\r\n", savedMNO);
+            break;
+
+
          case 'p' :  // rerun program from the beginning
             printf(hpo, "...commanded reboot\r\n");
             GlobalResetOnExit = TRUE ;

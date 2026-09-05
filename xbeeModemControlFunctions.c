@@ -12,7 +12,6 @@
 // AM0: airplane mode is off
 // ANwap.cingular: sets access point name
 // DO0: device option inhibits remote management
-// DO2: device option inhibits remote management and permits 2G fallback
 // CN: exit command mode and apply these commands
 //
 // as we have discovered, not every one of those commands we identified
@@ -60,10 +59,8 @@ BOOLEAN xbeeRuntimeConfiguration()
 #endif
    BYTE XBsetupcmds2[] = "AP1";  // 'AP1' enters API mode  AT auto-inserted
    
-   //BFATCR *reply;  // response from AT command function
    BOOLEAN scrBool;  // scratch BOOLEAN value
-   BYTE *scrlBuf;  // pointer to allocated large buffer for scratch string construction
-   BYTE *scrsBuf;  // pointer to allocated small buffer for scratch string construction
+//!   BYTE scrsBuf[32];  // small buffer for scratch string construction
    
 #if __DEBUG_XBEE
    if (dbpEnabled(LEV3))
@@ -86,7 +83,8 @@ BOOLEAN xbeeRuntimeConfiguration()
 
    delay_ms(2*100);  // force reset needs 100mS time to act, giver it lots
    
-   scrBool = xbeeWaitAndBlink();  // wait for association on network
+   //scrBool = xbeeWaitAndBlink();  // wait for association on network
+   scrBool = xbeeWaitAndBlink(250);  // wait for association on network
    if (scrBool)  // TRUE reply means error occurred. 
    {
 #if __DEBUG_XBEE
@@ -112,55 +110,53 @@ BOOLEAN xbeeRuntimeConfiguration()
 
 
    // initial setup has been performed, except for the transition to API mode.
+   // while still in transparent mode, fetch RSSI and Access Point Name
    // while still in transparent mode, send the wakeup SMS message(s) transparently
    // need to set phone numbers explicitly.
    xbeeGetRssi();  // get RSSI at this moment. ignore success or failure
-   scrsBuf = sballoc();  // allocate a small buffer in which to construct phone number strings
-   scrlBuf = lballoc();  // allocate a large buffer in which to construct the wakeup string
-   sprintf(scrlBuf, "SMS v%X.%X\r\nRSSI:-%2u  BV:%3.1w", vmsd, vlsd, savedRSSI, BatteryVoltage);  // wakeup string the same for both phones
-   //sprintf(scrsBuf, "P#%s", &CFG_NVMshadow[cfg_cur][PRPHNUM]);  // primary phone number without <cr>, then AT supplied elsewhere
-   sprintf(scrsBuf, "P#%s", formCompletePrimaryNumber());  // primary phone number without <cr>, then AT supplied elsewhere
-   scrBool = xbeeCmdOkReply(scrsBuf, 500);  // send the command, must respond with "OK". drops out of command mode
-   if (scrBool)  // TRUE reply means error occurred. 
-   {
-#if __DEBUG_XBEE
-      if (dbpEnabled(LEV3))
-      {
-         printf(dpo, "No OK resp to primary phone number set: \"%s\"\r\n", scrsBuf);
-      }
-#endif
-      lbfree(scrlBuf);  // free the allocated message composition buffers
-      sbfree(scrsBuf);
-      return TRUE;  // configuration aborted
-   }
-   // send the wakeup message, <cr> terminated
-   fprintf(SMSport,"%s\r",scrlBuf);  // there is no response to this message
-
-   //   Send secondary message if enabled, and first digit of number is a real digit 1..9
-   if ((CFG_NVMshadow[cfg_cur][SECONDARY] != 0) && (isdigit(CFG_NVMshadow[cfg_cur][SEPHNUM])))  
-   {
-      //sprintf(scrsBuf, "P#%s", &CFG_NVMshadow[cfg_cur][SEPHNUM]);   // secondary phone number from configuration CFG_NVM, without <cr>  AT supplied elsewhere
-      sprintf(scrsBuf, "P#%s", formCompleteSecondaryNumber());   // secondary phone number from configuration CFG_NVM, without <cr>  AT supplied elsewhere
-      scrBool = xbeeCmdOkReply(scrsBuf, 500);  // send the command, must respond with "OK". drops out of command mode
-      if (scrBool)  // TRUE reply means error occurred. 
-      {
-#if __DEBUG_XBEE
-         if (dbpEnabled(LEV3))
-         {
-            printf(dpo, "No OK resp to secondary phone number set: \"%s\"\r\n", scrsBuf);
-         }
-#endif
-         lbfree(scrlBuf);  // free the allocated message composition buffers
-         sbfree(scrsBuf);
-         return TRUE;  // configuration aborted
-      }
-      // send the wakeup message, <cr> terminated
-      fprintf(SMSport,"%s\r",scrlBuf);  // there is no response to this message
-   }
-   lbfree(scrlBuf);  // free the allocated message composition buffers
-   sbfree(scrsBuf);
-
-
+   xbeeGetApn();  // get APN at this moment. ignore success or failure
+   xbeeGetMno();  // get MNO at this moment. ignore success or failure
+   //sprintf(savedWakeupMessage, "SMS v%X.%X\r\nRSSI:-%2u  BV:%3.1w\r\nAPN:%s", vmsd, vlsd, savedRSSI, BatteryVoltage, savedAPN);  // wakeup string the same for both phones
+   sprintf(savedWakeupMessage, "SMS v%X.%X\r\nRSSI:-%2u  BV:%3.1w\r\nAPN:%s\r\nMNO:%s", 
+      vmsd, vlsd, savedRSSI, BatteryVoltage, savedAPN, savedMNO);  // wakeup string the same for both phones
+ 
+//!   //sprintf(scrsBuf, "P#%s", &CFG_NVMshadow[cfg_cur][PRPHNUM]);  // primary phone number without <cr>, then AT supplied elsewhere
+//!   sprintf(scrsBuf, "P#%s", formCompletePrimaryNumber());  // primary phone number without <cr>, then AT supplied elsewhere
+//!   scrBool = xbeeCmdOkReply(scrsBuf, 500);  // send the command, must respond with "OK". drops out of command mode
+//!   if (scrBool)  // TRUE reply means error occurred. 
+//!   {
+//!#if __DEBUG_XBEE
+//!      if (dbpEnabled(LEV3))
+//!      {
+//!         printf(dpo, "No OK resp to primary phone number set: \"%s\"\r\n", scrsBuf);
+//!      }
+//!#endif
+//!      return TRUE;  // configuration aborted
+//!   }
+//!   // send the wakeup message, <cr> terminated
+//!   fprintf(SMSport,"%s\r",savedWakeupMessage);  // there is no response to this message
+//!
+//!   //   Send secondary message if enabled, and first digit of number is a real digit 1..9
+//!   if ((CFG_NVMshadow[cfg_cur][SECONDARY] != 0) && (isdigit(CFG_NVMshadow[cfg_cur][SEPHNUM])))  
+//!   {
+//!      //sprintf(scrsBuf, "P#%s", &CFG_NVMshadow[cfg_cur][SEPHNUM]);   // secondary phone number from configuration CFG_NVM, without <cr>  AT supplied elsewhere
+//!      sprintf(scrsBuf, "P#%s", formCompleteSecondaryNumber());   // secondary phone number from configuration CFG_NVM, without <cr>  AT supplied elsewhere
+//!      scrBool = xbeeCmdOkReply(scrsBuf, 500);  // send the command, must respond with "OK". drops out of command mode
+//!      if (scrBool)  // TRUE reply means error occurred. 
+//!      {
+//!#if __DEBUG_XBEE
+//!         if (dbpEnabled(LEV3))
+//!         {
+//!            printf(dpo, "No OK resp to secondary phone number set: \"%s\"\r\n", scrsBuf);
+//!         }
+//!#endif
+//!         return TRUE;  // configuration aborted
+//!      }
+//!      // send the wakeup message, <cr> terminated
+//!      fprintf(SMSport,"%s\r",savedWakeupMessage);  // there is no response to this message
+//!   }
+//!
+//!
    // now complete the initialization by invoking API mode, closing command mode
    scrBool = xbeeCmdOkReply(XBsetupcmds2, 500);  // send the commands
    if (scrBool)  // TRUE reply means error occurred. 
@@ -178,67 +174,6 @@ BOOLEAN xbeeRuntimeConfiguration()
    // return FALSE to indicate that
 
    return FALSE;
-   
-}
-
-//
-// park the wakeup code here
-//
-BOOLEAN phonyWakeup()
-{
-   BOOLEAN scrBool;  // scratch BOOLEAN value
-   BYTE *scrlBuf;  // pointer to allocated large buffer for scratch string construction
-   BYTE *scrsBuf;  // pointer to allocated small buffer for scratch string construction
-
-   // initial setup is performed, except for the transition to API mode.
-   // while still in transparent mode, send the wakeup SMS message(s) transparently
-   // need to set phone numbers explicitly.
-   xbeeGetRssi();  // get RSSI at this moment. ignore success or failure
-   scrsBuf = sballoc();  // allocate a small buffer in which to construct phone number strings
-   scrlBuf = lballoc();  // allocate a large buffer in which to construct the wakeup string
-   sprintf(scrlBuf, "SMS v%X.%X\r\nRSSI:-%2u  BV:%3.1w", vmsd, vlsd, savedRSSI, BatteryVoltage);  // wakeup string the same for both phones
-   //sprintf(scrsBuf, "P#%s", &CFG_NVMshadow[cfg_cur][PRPHNUM]);  // primary phone number without <cr>, then AT supplied elsewhere
-   sprintf(scrsBuf, "P#%s", formCompletePrimaryNumber());  // primary phone number without <cr>, then AT supplied elsewhere
-   scrBool = xbeeCmdOkReply(scrsBuf, 500);  // send the command, must respond with "OK"
-   if (scrBool)  // TRUE reply means error occurred. 
-   {
-#if __DEBUG_XBEE
-      if (dbpEnabled(LEV3))
-      {
-         printf(dpo, "No OK resp to primary phone number set: \"%s\"\r\n", scrsBuf);
-      }
-#endif
-      lbfree(scrlBuf);  // free the allocated message composition buffers
-      sbfree(scrsBuf);
-      return TRUE;  // configuration aborted
-   }
-   // send the wakeup message, <cr> terminated
-   fprintf(SMSport,"%s\r",scrlBuf);  // there is no response to this message
-
-   //   Send secondary message if enabled, and first digit of number is a real digit 1..9
-   if ((CFG_NVMshadow[cfg_cur][SECONDARY] != 0) && (isdigit(CFG_NVMshadow[cfg_cur][SEPHNUM])))  
-   {
-      //sprintf(scrsBuf, "P#%s", &CFG_NVMshadow[cfg_cur][SEPHNUM]);   // secondary phone number from configuration CFG_NVM, without <cr>  AT supplied elsewhere
-      sprintf(scrsBuf, "P#%s", formCompleteSecondaryNumber());   // secondary phone number from configuration CFG_NVM, without <cr>  AT supplied elsewhere
-      scrBool = xbeeCmdOkReply(scrsBuf, 500);  // send the command, must respond with "OK"
-      if (scrBool)  // TRUE reply means error occurred. 
-      {
-#if __DEBUG_XBEE
-         if (dbpEnabled(LEV3))
-         {
-            printf(dpo, "No OK resp to secondary phone number set: \"%s\"\r\n", scrsBuf);
-         }
-#endif
-         lbfree(scrlBuf);  // free the allocated message composition buffers
-         sbfree(scrsBuf);
-         return TRUE;  // configuration aborted
-      }
-      // send the wakeup message, <cr> terminated
-      fprintf(SMSport,"%s\r",scrlBuf);  // there is no response to this message
-   }
-   lbfree(scrlBuf);  // free the allocated message composition buffers
-   sbfree(scrsBuf);
-
    
 }
 
@@ -368,15 +303,16 @@ BOOLEAN xbeeCmdOkReply(BYTE *cstr, int16 msTimeToWait = 500)
 //
 // send an AT command to XBee modem via command mode
 //
-// XXXcalled with a string holding the command exactly as is to be sent, excluding <cr> which is supplied here
 // called with a string holding only the AT command(s).
 // the prefix "AT", and the terminating <cr> are supplied here.
+//
 // second parameter is the time in milliseconds to pause between the issuance
 // of the command and the reply processing. default 500 mS
 //
 // return the responded string in a pointer to a response structure. 
+// that may occupy either a small or a large allocated buffer,
+// depending upon the length of the string that was responded.
 //
-// terminate command mode if the third parameter is TRUE
 //
 BFATCR *xbeeSendAtCommand(BYTE *cstr, int16 msTimeToWait = 500)
 {
@@ -391,9 +327,17 @@ BFATCR *xbeeSendAtCommand(BYTE *cstr, int16 msTimeToWait = 500)
    }
 #endif
 
-   // fetch small buffer to use as 'BFATCR' response
-   RetVal = (BFATCR *)sballoc();
-   RetVal->respbl = 0;  // set length zero for no response
+   // fetch buffer to use as 'BFATCR' response
+//!   if (lrb)
+//!   {
+//!      RetVal = (BFATCR *)lballoc();  // use large allocated buffer for response
+//!   }
+//!   else
+//!   {
+//!      RetVal = (BFATCR *)sballoc();  // use small allocated buffer for response
+//!   }
+//!   RetVal->respbl = 0;  // set length zero for no response
+   RetVal = (BFATCR *)sballoc();  // use small allocated buffer for response
 
    // enter XBee modem command mode
    
@@ -420,7 +364,7 @@ BFATCR *xbeeSendAtCommand(BYTE *cstr, int16 msTimeToWait = 500)
    // send this command
    fprintf(SMSport,"AT%s,CN\r",cstr);  // form the command for transmission by prefixing the input with "AT", suffixing with CN and <cr> and send it
    
-   // I think we should wait at this point
+   // I think we should wait at this point.
    if(msTimeToWait > 0)
    {
       delay_ms(msTimeToWait);
@@ -432,9 +376,9 @@ BFATCR *xbeeSendAtCommand(BYTE *cstr, int16 msTimeToWait = 500)
       {
 #if __DEBUG_XBEE
          if (dbpEnabled(LEV3))
-            {
-               printf(dpo, "\r\nXBEE NO REPLY TO \"%s\" CMD %s\r\n", cstr, stringTheDateTimeUptime());
-           }
+         {
+            printf(dpo, "\r\nXBEE NO REPLY TO \"%s\" CMD %s\r\n", cstr, stringTheDateTimeUptime());
+         }
 #endif
          return RetVal;   
       }
@@ -443,15 +387,17 @@ BFATCR *xbeeSendAtCommand(BYTE *cstr, int16 msTimeToWait = 500)
       {
          printf(dpo, "\r\nXBEE \"%s\" RESPONSE: %s", cstr, stringTheDateTimeUptime());
          dumpToHost((BYTE *)XBEEstrings.sab, XBEEstrings.sabCt);
-//!         printf(dpo, "\r\nXBEE RESPONSE STRINGS[%d]:", XBEEstrings.rstrPtrCt);
-//!         if(XBEEstrings.rstrPtrCt)
-//!            {
-//!               for (int i = 0 ; i < XBEEstrings.rstrPtrCt ; i++)
-//!                  {
-//!                     printf(dpo, "\r\n|%s|", XBEEstrings.rstrPtr[i]);
-//!                  }
-//!            }
-//!         printf(dpo, "\r\n");
+#if 1  // stupid kludge
+         printf(dpo, "\r\nXBEE RESPONSE STRINGS[%d]:", XBEEstrings.rstrPtrCt);
+         if(XBEEstrings.rstrPtrCt)
+         {
+            for (int i = 0 ; i < XBEEstrings.rstrPtrCt ; i++)
+            {
+               printf(dpo, "\r\n|%s|", XBEEstrings.rstrPtr[i]);
+            }
+      }
+      printf(dpo, "\r\n");
+#endif
       }
 #endif
 
@@ -530,36 +476,6 @@ BOOLEAN xbeeCommandMode()
 //!#endif
    return FALSE;  // means no error, success
 }
-
-
-
-// exit command mode.
-//
-// if not in command mode, do nothing and return success
-//
-// otherwise send "CN" command to modem.
-// ignore any reply data, it will get sent to packet parse and ignored
-// mark not in command mode
-// (?)clear the input diversion flag. maybe don't need this...
-//
-// return 'FALSE' if successful, 'TRUE' if no response from modem
-//
-BOOLEAN xbeeExitCommandMode()
-{
-   // just send the command without any other action, then ignore the result
-   fprintf(SMSport, "ATCN\r");
-   
-   XbeeInCommandMode = FALSE;  // clear this mode
-//!#if __DEBUG_XBEE
-//!   if (dbpEnabled(LEV3))
-//!   {
-//!      printf(dpo, "\r\n########## XBEE COMMAND MODE SET TO FALSE (1) %s##########\r\n", stringTheDateTimeUptime());
-//!   }
-//!#endif
-   return FALSE;  // means no error, success
-}
-
-
 
 
 #endif

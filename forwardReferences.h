@@ -8,14 +8,13 @@
 //
 
 BYTE *prefixDetectionReportResponse();
+BYTE *formCompleteCellNumber(int, int, int, int);
 BYTE *formCompletePrimaryNumber();
 BYTE *formCompleteSecondaryNumber();
 BYTE getModemIndicator();
 BYTE gethex();
 BYTE gethex1();
 BYTE read_fltr_nvm(long int);
-BYTE xbeeApiSendAtCommand(BYTE *, U32 x=2000L);
-//BYTE phoneNumberFormationBuffer[];  // scratch static storage for phone number string assembly
 BFATCR *xbeeSendAtCommand(BYTE *, int16 x = 500);
 UW wordqDequeue(WORDQ *);
 BOOLEAN SURCommandParsedReply(BYTE *, SPARSE &x);
@@ -29,7 +28,6 @@ BOOLEAN isXbeeAwake();
 BOOLEAN isXbeeOkToUse();
 BOOLEAN xbeeCmdOkReply(BYTE *cstr, int16 x = 500);
 BOOLEAN xbeeCommandMode();
-BOOLEAN xbeeExitCommandMode();
 BOOLEAN xbeeRuntimeConfiguration();
 BOOLEAN xbeeWaitAndBlink(BYTE x = 45);
 char *stringModemPower();
@@ -85,6 +83,7 @@ void lbfree(BYTE *);
 void lbload(BYTE *);
 void loopingPacketsProcess(int16 durationMs=150);  // nominally process for 150ms (150 character times)
 void maintainLCD(BOOLEAN x=TRUE);
+void maintainDateTimeValues();
 void MinuteWork();  // items which need to be performed each minute, or multiple thereof
 void needResetMessage();
 void packetInfoDisplay(APBU *, BOOLEAN x=FALSE);
@@ -97,7 +96,6 @@ void preConfigInit();
 void prepareShadowCFGForMods();
 void prepareShadowFLTRForMods();
 void resetPacketsParse();
-void resetTickTask();
 void sbfree(BYTE *);
 void sbload(BYTE *);
 void setModemIndicator(BYTE);
@@ -119,14 +117,13 @@ void waitXbeeDataStart(int16 x = 750);
 void waitXbeeDataFinish(int16 x = 250);
 void wordqEnqueue(WORDQ *, UW);
 void xbeeAirplaneModeControl(int);
-void xbeeApiAirplaneModeControl(int);
-void xbeeApiGetRssi();
 void xbeeApiPacketSend(APBU *);
 void xbeeApiSendSMSmessage(BYTE *, BYTE *, int x=0);
+void xbeeGetApn();
+void xbeeGetMno();
 void xbeeGetRssi();
 void xbeePutToSleep();
 void xbeeSetPowerControlFlags();
-void xbeeShutDownModem();
 void xbeeWakeUp();
 void xbfree(void *);
 void xx_RTC_Read();

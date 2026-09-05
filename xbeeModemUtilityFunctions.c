@@ -69,14 +69,13 @@ BYTE const blinkTimeOff = 60;  // units are mS
 //
 BOOLEAN xbeeWaitAndBlink(BYTE waitSecs = 45)
 {
-   static unsigned int32 tripCount = 0;  // counts calls to this function
-   //static BYTE *aiStatusCommandAt = { "ATAI" };  // get association status
    static BYTE *aiStatusCommandAt = { "AI" };  // get association status
    BYTE assocStat = 0x99;  // bogus value allows tracking of changes
    BYTE prevAssocStat = 0x99;  // bogus value allows tracking of changes
-   unsigned int32 limitTime;  // done when uptime reaches this value
+   int startTime = uptimeSeconds();  // save this count
+   int limitTime;  // done when uptime reaches this value
    //int8 baseLed = input(LED);  // LED value at start, restore at end
-   int32 monoTonic = 0;  // count up in this variable
+   BYTE monoTonic = 0;  // count up in this variable
    unsigned int32 readingCount = 0;  // association indication reading count up in this variable
    signed int16 x;  // conversionResult
    int32 inOneSecond = 0;
@@ -85,23 +84,19 @@ BOOLEAN xbeeWaitAndBlink(BYTE waitSecs = 45)
    BOOLEAN statusMatched = FALSE;
    BFATCR *reply;  // response from AT command function
    
-   ++tripCount;  // note our passage
-   
-   if (waitSecs < 1)
-      return TRUE;  // don't wait at all if parameter is zero, indicate association failed
-   
-//   if (waitSecs < 128)  // kludge for experiment: double the wait time
-//      waitSecs *= 2;
-
+   if (waitSecs < 5)
+      waitSecs = 5;  // establish floor waiting time
+    
+   //limitTime = uptimeMilliseconds() + (waitSecs * 1000L);  // done when uptime reaches this value
+   limitTime = startTime + waitSecs + 1;  // done when uptime reaches this value
+  
 #if __DEBUG_XBEE_API
    if (dbpEnabled(LEV3))
    {
-      printf(hpo, "*** xbeeWaitAndBlink(%u) tc:%Lu  %s ***\r\n", waitSecs, tripCount, stringTheUptime());
+      printf(dpo, "*** xbeeWaitAndBlink(%u) %d --> %d %s ***\r\n", waitSecs, startTime, limitTime, stringTheUptime());
    }
 #endif
 
-   
-   limitTime = uptimeMilliseconds() + (waitSecs * 1000L);  // done when uptime reaches this value
 
    inOneSecond = uptimeMilliseconds() + 1000L;  // about a second from now
 
@@ -167,25 +162,25 @@ BOOLEAN xbeeWaitAndBlink(BYTE waitSecs = 45)
 #if __DEBUG_XBEE_API
             if (dbpEnabled(LEV3))
             {
-               printf(hpo, "*** xbeeWaitAndBlink() tc:%Lu loop:%u  assoc:0x%02X  %s***\r\n", tripCount, readingCount, assocStat, stringTheUptime());
+               printf(dpo, "*** xbeeWaitAndBlink() loop:%u  assoc:0x%02X  %s***\r\n", readingCount, assocStat, stringTheUptime());
             }
 #endif
          }
          inOneSecond = uptimeMilliseconds() + 1000L;  // about a second from now
          BigLoopMaintenance();  // maintain clocks and LCD
       }
-      keepLooping = uptimeMilliseconds() < limitTime;
+      keepLooping = uptimeSeconds() < limitTime;
    } while (!statusMatched && keepLooping);  // run loop while these are true
 #if __DEBUG_XBEE_API
    if (dbpEnabled(LEV3))
    {
       if(statusMatched)
       {
-         printf(hpo, "*** xbeeWaitAndBlink() tc:%Lu terminated, condition matched %s ***\r\n", tripCount, stringTheUptime());
+         printf(dpo, "*** xbeeWaitAndBlink() terminated, condition matched %s ***\r\n", stringTheUptime());
       }
       else
       {
-         printf(hpo, "*** xbeeWaitAndBlink() tc:%Lu terminated, loop limit reached %s ***\r\n", tripCount, stringTheUptime());
+         printf(dpo, "*** xbeeWaitAndBlink() terminated, loop limit reached %s ***\r\n", stringTheUptime());
       }
    }
 #endif
@@ -204,7 +199,6 @@ BOOLEAN xbeeWaitAndBlink(BYTE waitSecs = 45)
    
    return !statusMatched;  // return value is inverse of this setting, FALSE means success
 }
-
 
 
 
@@ -631,25 +625,6 @@ void waitXbeeDataFinish(int16 durationMs = 250)
 
 
 //
-// utility function to compute a checksum value for
-// XBee API frames. sum is computed over a span of bytes, 
-// the lower 8 bits are isolated and that 8-bit value subtracted
-// from 0xFF to produce the return
-//
-BYTE xbeeChecksum(BYTE *values, BYTE count)
-{
-   unsigned int16 accum = 0;  // compute sum here
-   
-   for (int i = 0 ; i < count ; i++)
-   {
-      accum += values[i];
-   }
-      
-   return (0xFF - (accum & 0xFF));
-}
-
-
-//
 // management of the data stream read from the SMS modem in AT command mode.
 //
 // data is read character-by-character and parsed into strings according
@@ -907,6 +882,127 @@ void xbeeGetRssi()
    }
 #endif
 
+}
+  
+  
+   
+//
+// send AP command to read APN value (access point name string)
+//
+// cannot request this if XBEE modem is not active.
+// return silently if that error occurs.
+// value error or out of range causes value 99 to be set
+//
+// until shown that we need to do something else,
+// this function will not return a value related to success or failure.
+//
+void xbeeGetApn()
+{
+   static BYTE *anNowStatusCommandAt = { "AN" };  // fetch access point name string,  AT auto-inserted
+   BFATCR *reply;  // response from AT AN function
+
+   // AT command function
+   reply = xbeeSendAtCommand(anNowStatusCommandAt, TRUE);  // use large buffer for return string
+   if (reply)
+   {
+      // string cannot be null
+      if (reply->respbl < 1)  // bad number
+      {
+#if __DEBUG_XBEE_API
+         if (dbpEnabled(LEV3))
+         {
+            printf(dpo, "*** APN fail, null string\r\n");
+         }
+#endif
+         strcpy(savedAPN, "<unknown>");  // default string saved, indicates some error occurred
+      }
+      else  // good response
+      {
+#if __DEBUG_XBEE_API
+         if (dbpEnabled(LEV3))
+         {
+            printf(dpo, "##### AT AP [%d]:%s\r\n", reply->respbl, reply->respb);
+         }
+#endif
+         // save string as current APN in global cell. ensure a null termination. preserve entire length.
+//!         reply->respb[reply->respbl] = 0;  // null-terminate string at the indicated length
+//!         memcpy(savedAPN, reply->respb, reply->respbl + 1);  // save the null-terminated string in fixed location
+         strcpy(savedAPN, reply->respb);  // save the string in fixed location
+      }
+   }
+#if __DEBUG_XBEE_API
+   else
+   {
+      if (dbpEnabled(LEV3))
+      {
+         printf(dpo, "##### AT APN NULL REPLY\r\n");
+      }
+      strcpy(savedAPN, "<unknown>");  // default string saved, indicates some error occurred
+   }
+#endif
+
+   savedAPN_At = uptimeMilliseconds();  // note time at which this occurred
+   xbfree(reply);  // free the allocated buffer
+}
+   
+   
+//
+// send AP command to read MNO value (mobile network operator string)
+//
+// cannot request this if XBEE modem is not active.
+// return silently if that error occurs.
+// value error or out of range causes value 99 to be set
+//
+// until shown that we need to do something else,
+// this function will not return a value related to success or failure.
+//
+void xbeeGetMno()
+{
+   static BYTE *mnNowStatusCommandAt = { "MN" };  // fetch network operator name string,  AT auto-inserted
+   BFATCR *reply;  // response from AT MN function
+
+   // AT command function
+   reply = xbeeSendAtCommand(mnNowStatusCommandAt, TRUE);  // use large buffer for return string
+   if (reply)
+   {
+      // string cannot be null
+      if (reply->respbl < 1)  // bad number
+      {
+#if __DEBUG_XBEE_API
+         if (dbpEnabled(LEV3))
+         {
+            printf(dpo, "*** MNO fail, null string\r\n");
+         }
+#endif
+         strcpy(savedAPN, "<unknown>");  // default string saved, indicates some error occurred
+      }
+      else  // good response
+      {
+#if __DEBUG_XBEE_API
+         if (dbpEnabled(LEV3))
+         {
+            printf(dpo, "##### AT MN [%d]:%s\r\n", reply->respbl, reply->respb);
+         }
+#endif
+         // save string as current APN in global cell. ensure a null termination. preserve entire length.
+//!         reply->respb[reply->respbl] = 0;  // null-terminate string at the indicated length
+//!         memcpy(savedAPN, reply->respb, reply->respbl + 1);  // save the null-terminated string in fixed location
+         strcpy(savedMNO, reply->respb);  // save the string in fixed location
+      }
+   }
+#if __DEBUG_XBEE_API
+   else
+   {
+      if (dbpEnabled(LEV3))
+      {
+         printf(dpo, "##### AT MNO NULL REPLY\r\n");
+      }
+      strcpy(savedMNO, "<unknown>");  // default string saved, indicates some error occurred
+   }
+#endif
+
+   savedMNO_At = uptimeMilliseconds();  // note time at which this occurred
+   xbfree(reply);  // free the allocated buffer
 }
   
   

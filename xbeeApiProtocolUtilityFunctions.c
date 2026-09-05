@@ -5,6 +5,25 @@
 //
 
 
+//
+// utility function to compute a checksum value for
+// XBee API frames. sum is computed over a span of bytes, 
+// the lower 8 bits are isolated and that 8-bit value subtracted
+// from 0xFF to produce the return
+//
+BYTE xbeeChecksum(BYTE *values, BYTE count)
+{
+   unsigned int16 accum = 0;  // compute sum here
+   
+   for (int i = 0 ; i < count ; i++)
+   {
+      accum += values[i];
+   }
+      
+   return (0xFF - (accum & 0xFF));
+}
+
+
 
 
 //

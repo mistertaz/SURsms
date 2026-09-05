@@ -23,7 +23,14 @@ void xbeeApiSendSMSmessage(BYTE *DialNum, BYTE *MessageText, int dline = 0)  // 
    BYTE mlen = strlenb(MessageText);
    BYTE *dlptr;  // display line image pointer
    BYTE *lineimage;  // pointer to small buffer in which to construct the display message
-   
+    
+#if __DEBUG_XBEE_API || __DEBUG_XBEE_API_SMS || __DEBUG_MISC
+   if (dbpEnabled(LEV3))
+   {
+      printf(dpo, "\r\n*** xbeeApiSendSMSmessage([%u]:\"%s\", [%u]:\"%s\", %d) %s\r\n", nlen, DialNum, mlen, MessageText, dline, stringTheDateTimeUptime());
+   }
+#endif
+  
    if (dline == 3)
    {
       dlptr = DisplayLine3String;
@@ -105,7 +112,7 @@ void xbeeApiSendSMSmessage(BYTE *DialNum, BYTE *MessageText, int dline = 0)  // 
    if (dlptr)  // is destination string pointer valid?
    {
       lineimage = sballoc();  // get a small buffer in which to construct the display message
-      fillBytes(lineimage, 20, ' ', TRUE);  // create a 20-character blank-filled string
+      fillBytes(lineimage, 20, ' ', TRUE);  // create a 20-character blank-filled, null-terminated string
       // copy the RSSI from MessageText[] to the first 3 positions of display line message
       lineimage[0] = MessageText[6];
       lineimage[1] = MessageText[7];
@@ -117,22 +124,22 @@ void xbeeApiSendSMSmessage(BYTE *DialNum, BYTE *MessageText, int dline = 0)  // 
          nlen = 16;
       }
       memcpy(lineimage+4, DialNum, nlen);
-      strcpy(dlptr, lineimage);  // copy finished display message to appropriate display line buffer
-//!#if __DEBUG_MISC
-//!      if (dbpEnabled(LEV3))
-//!      {
-//!         printf(dpo, "\r\n*** xbeeApiSendSMSmessage()\r\n***   lineimage>%s<\r\n***   dlptr>%s<\r\n", lineimage, dlptr);
-//!      }
-//!#endif
+      strcpy(dlptr, lineimage);  // copy finished display message string to appropriate display line buffer
+#if __DEBUG_XBEE_API || __DEBUG_XBEE_API_SMS || __DEBUG_MISC
+      if (dbpEnabled(LEV3))
+      {
+         printf(dpo, "\r\n*** xbeeApiSendSMSmessage()\r\n***   lineimage>%s<\r\n***   dlptr>%s<\r\n", lineimage, dlptr);
+      }
+#endif
       sbfree(lineimage);  // deallocate small buffer
    }
    
-#if __DEBUG_XBEE_API || __DEBUG_XBEE_API_SMS || __DEBUG_MISC
-   if (dbpEnabled(LEV3))
-   {
-      printf(dpo, "\r\n*** xbeeApiSendSMSmessage([%u]:\"%s\", [%u]:\"%s\") %s\r\n", nlen, DialNum, mlen, MessageText, stringTheDateTimeUptime());
-   }
-#endif
+//!#if __DEBUG_XBEE_API || __DEBUG_XBEE_API_SMS || __DEBUG_MISC
+//!   if (dbpEnabled(LEV3))
+//!   {
+//!      printf(dpo, "\r\n*** xbeeApiSendSMSmessage([%u]:\"%s\", [%u]:\"%s\") %s\r\n", nlen, DialNum, mlen, MessageText, stringTheDateTimeUptime());
+//!   }
+//!#endif
 
    wordqEnqueue(apiXmitQueue, localPktPtr);  // and queue up the packet for transmission.
 }
@@ -259,74 +266,6 @@ BYTE xbeeApiSendAtCommand(BYTE *cmdstr, U32 setDeadTime=XBEE_DEAD_TIME_DEFAULT)
 
 
 //
-// send API packet to read instantaneous RSSI value
-//
-// cannot request this if API is not active, or if XBEE modem is not active.
-// return silently if that error occurs.
-//
-// cached RSSI works real well.
-// select the instantaneous value and see how that does
-//
-void xbeeApiGetRssi()
-{
-   static BYTE *dbNowStatusCommand = { "DB1" };  // instantaneous Cellular Signal Stringth
-
-   //if (XBeeApiIsActive)
-   //{
-      xbeeApiSendAtCommand(dbNowStatusCommand);  // ask for fresh copy of RSSI
-   //}
-//!#if __DEBUG_XBEE_API
-//!   else  // unable to send this request
-//!   {
-//!      if (dbpEnabled(LEV3))
-//!      {
-//!         printf(dpo, "*** xbeeApiGetRssi() fail, device (%c) or api (%c) inactive\r\n", (XbeeModemIsActive) ? 'A' : 'I', (XBeeApiIsActive) ? 'A' : 'I');
-//!         //printf(dpo, "*** xbeeApiGetRssi() fail, api inactive\r\n");
-//!      }
-//!   }
-//!#endif
-
-}
-  
-  
-  
-   
-//
-// function to command Airplane Mode on or off using API
-//
-// in our usage of the modem, airplane mode is selected prior to commanding
-// modem sleep with a pin signal. airplane mode will elegantly disconnect from
-// the cellular system, which Digi advises be done before sleeping. they
-// recommend giving the XBEE 30 seconds once airplane mode is entered in order
-// for it to finish its disengagement before putting the modem to sleep.
-//
-void xbeeApiAirplaneModeControl(int val)  // zero means normal mode, <>0 means airplane mode
-{
-   static BYTE *airplaneModeOffCommand = { "AM0" };
-   static BYTE *airplaneModeOnCommand = { "AM1" };
-   BOOLEAN InvokingAirplaneMode;
-   
-#if __DEBUG_XBEE_API
-   if (dbpEnabled(LEV3))
-   {
-      printf(dpo, "*** xbeeApiAirplaneModeControl(%d) %s ***\r\n", val, stringTheDateTimeUptime());
-   }
-#endif
-
-   InvokingAirplaneMode = val != 0;
-   if (InvokingAirplaneMode)
-   {
-      xbeeApiSendAtCommand(airplaneModeOnCommand, 30000L);     // send the command string, need 30 seconds dead time
-   }
-   else
-   {
-      xbeeApiSendAtCommand(airplaneModeOffCommand, 30000L);     // send the command string, need 30 seconds dead time
-   }
-
-}
-
-
-//
 // XBee modem is actually always under power and configured to use API mode.
 //
 // if the modem has been put to sleep to conserve power, awaken it here.
@@ -390,6 +329,10 @@ void appStartUpModem()
       
       xbeeWaitAndBlink();  // wait for association with network to occur
    }
+
+   // set status indicating modem is up
+   setModemActive();
+   resetPacketsParse();  // unrecoverable packet parse after this
    
 #if 0  // old way
    // fire off command to fetch RSSI, do not wait for response
@@ -398,10 +341,6 @@ void appStartUpModem()
    // fire off command to fetch RSSI and save in designated cells
    xbeeGetRssi();
 #endif
-
-   // set status indicating modem is up
-   setModemActive();
-   resetPacketsParse();  // unrecoverable packet parse after this
    
 #if __DEBUG_XBEE
    timeAfterReadying = uptimeMilliseconds();  // save time now

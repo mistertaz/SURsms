@@ -90,27 +90,6 @@ void process()
             ConditionalNeedTheHealthReport = TRUE;
          }
          
-         // anticipating modem usage seems to be disused, get rid of 'next minute' items
-//!         // compute *next* minute items
-//!         NextMinuteBin = (MinuteBin + 1) % 60;
-//!         
-//!         NeedTheHealthReportNextMinute = (NextMinuteBin == HealthReportMinuteMatch) && CheckNeedHealthReportThisHour(HourBin);
-//!         NeedTheDetectionReportNextMinute = CheckNeedDetectionReportThisMinute(NextMinuteBin);
-//!
-//!         NeedModemNextMinute = NeedTheHealthReportNextMinute || NeedTheDetectionReportNextMinute;
-//!
-//!         // if modem is possibly used in the following minute, and early startup is configured, ready it now
-//!         if (NeedModemNextMinute && CFG_NVMshadow[cfg_cur][MDM_EARLY])
-//!         {
-//!            NeedModemNextMinute = FALSE;  // only need it once
-//!            appStartUpModem();  // if appropriate, wake modem from sleep, exit airplane mode
-//!#if __DEBUG_MISC
-//!            if (dbpEnabled(LEV3))
-//!            {
-//!               printf(dpo, "*** Modem Awakened @ MinuteBin:%u  %s\r\n", MinuteBin, stringTheDateTimeUptime());
-//!            }
-//!#endif
-//!         }  // end of 'need modem next minute'
             
       }  // end of 'it's a new minute'
       

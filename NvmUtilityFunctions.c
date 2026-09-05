@@ -442,10 +442,10 @@ void defaultShadowCFG_NVM()
    CFG_NVMshadow[cfg_cur][PRPHLEN] = strlen(&CFG_NVMshadow[cfg_cur][PRPHNUM]); // length of primary number string
    strcpy(&CFG_NVMshadow[cfg_cur][SEPHNUM], "5205559999");   // bogus phone number for secondary report
    CFG_NVMshadow[cfg_cur][SEPHLEN] = strlen(&CFG_NVMshadow[cfg_cur][SEPHNUM]); // length of secondary number string
-   strcpy(&CFG_NVMshadow[cfg_cur][PRPHCCD], "");   // *empty* string value
+   strcpy(&CFG_NVMshadow[cfg_cur][PRPHCCD], "-");   // "not used" string value
    CFG_NVMshadow[cfg_cur][PRCCLEN] = strlen(&CFG_NVMshadow[cfg_cur][PRPHCCD]); // length of primary number country code string
-   strcpy(&CFG_NVMshadow[cfg_cur][SEPHCCD], "");   // *empty* string value
-   CFG_NVMshadow[cfg_cur][SECCLEN] = strlen(&CFG_NVMshadow[cfg_cur][SEPHCCD]); // length of primary number country code string
+   strcpy(&CFG_NVMshadow[cfg_cur][SEPHCCD], "-");   // "not used" string value
+   CFG_NVMshadow[cfg_cur][SECCLEN] = strlen(&CFG_NVMshadow[cfg_cur][SEPHCCD]); // length of secondary number country code string
    CFG_NVMshadow[cfg_cur][MATCH_T0] = IGNORE_ALL;   // no reporting of tag data Type 0
    CFG_NVMshadow[cfg_cur][MATCH_T1] = IGNORE_ALL;   // no reporting of tag data Type 1
    CFG_NVMshadow[cfg_cur][MATCH_T2] = IGNORE_ALL;   // no reporting of tag data Type 2
@@ -455,7 +455,7 @@ void defaultShadowCFG_NVM()
    CFG_NVMshadow[cfg_cur][MATCH_T6] = IGNORE_ALL;   // no reporting of tag data Type 6
    CFG_NVMshadow[cfg_cur][MATCH_T7] = IGNORE_ALL;   // no reporting of tag data Type 7
    CFG_NVMshadow[cfg_cur][MATCH_T8] = IGNORE_ALL;   // no reporting of tag data Type 8
-   CFG_NVMshadow[cfg_cur][MATCH_T9] = IGNORE_ALL;   // no reporting of tag data Type 9
+   CFG_NVMshadow[cfg_cur][MATCH_T9] = INCLUDE_ALL;  // report all tag data for Type 9  //IGNORE_ALL;   // no reporting of tag data Type 9
    CFG_NVMshadow[cfg_cur][MATCH_TA] = IGNORE_ALL;   // no reporting of tag data Type 10 (0xA)
    CFG_NVMshadow[cfg_cur][MATCH_TB] = IGNORE_ALL;   // no reporting of tag data Type 11 (0xB)
    CFG_NVMshadow[cfg_cur][MATCH_TC] = IGNORE_ALL;   // no reporting of tag data Type 12 (0xC)
@@ -480,10 +480,10 @@ void defaultShadowCFG_NVM()
    CFG_NVMshadow[cfg_cur][PRPHLEN] = strlen(&CFG_NVMshadow[cfg_cur][PRPHNUM]); // length of primary number string
    strcpy(&CFG_NVMshadow[cfg_cur][SEPHNUM], "5204047475");   // TAZ iPhone number for secondary report
    CFG_NVMshadow[cfg_cur][SEPHLEN] = strlen(&CFG_NVMshadow[cfg_cur][SEPHNUM]); // length of secondary number string
-   strcpy(&CFG_NVMshadow[cfg_cur][PRPHCCD], "+1");   // value for US "+1"
+   strcpy(&CFG_NVMshadow[cfg_cur][PRPHCCD], "1");   // value for US "+1"
    CFG_NVMshadow[cfg_cur][PRCCLEN] = strlen(&CFG_NVMshadow[cfg_cur][PRPHCCD]); // length of primary number country code string
-   strcpy(&CFG_NVMshadow[cfg_cur][SEPHCCD], "011");   // value for US, not using plus code
-   CFG_NVMshadow[cfg_cur][SECCLEN] = strlen(&CFG_NVMshadow[cfg_cur][SEPHCCD]); // length of primary number country code string
+   strcpy(&CFG_NVMshadow[cfg_cur][SEPHCCD], "1");   // value for US, not using plus code
+   CFG_NVMshadow[cfg_cur][SECCLEN] = strlen(&CFG_NVMshadow[cfg_cur][SEPHCCD]); // length of secondary number country code string
    CFG_NVMshadow[cfg_cur][DBG_LEV] = 3;   // most debug print enabled
    CFG_NVMshadow[cfg_cur][ALLTAGS] = 1;   // in promiscuous detection report mode, pass all tag types
 #endif

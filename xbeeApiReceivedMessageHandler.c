@@ -254,127 +254,6 @@ void packetsStalenessCheck()
       }
    }  // end while any transmit packets
 
-// lines below are from the copy/pasted function
-      
-      
-//!      pfid = pptr->fmtxst.frameid;  // frame ID of transmitted packet
-//!      cmdstatus = sptr->fmtxst.txstat;
-//!      // now see whether a transmitted packet matches the frame ID
-//!      pendingPacketCount = wordqCount(smsPktDispQueue);
-//!      if (pendingPacketCount)  // any packets pending disposition?
-//!      {
-//!         // for each queued packet, dequeue and check frame id
-//!         // if does not match, requeue packet
-//!         // if matches, process that packet
-//!         foundMatchingFrame = FALSE;
-//!         while(pendingPacketCount--)
-//!         {
-//!            pptr = wordqDequeue(smsPktDispQueue);  // this is a type ftFMTXSMS,  SMS transmit message (frame type 0x1F)
-//!            pfid = pptr->fmtxst.frameid;  // frame ID of transmitted packet
-//!            if (pfid != sfid)  // not the droid we're looking for
-//!            {
-//!               wordqEnqueue(smsPktDispQueue, pptr);  // re-queue the packet
-//!               continue;  // loop to next queue entry
-//!            }
-//!            else  // frames match, deal with this message
-//!            {
-//!               foundMatchingFrame = TRUE;
-//!               break;  // stop looping
-//!            }
-//!         }  // end of 'while(pendingPacketCount--)'
-//!         if (foundMatchingFrame)  // we have status frame ID matching the pending transmit frame ID
-//!         {
-//!            tStampPacketSent = pptr->fmbfr.tStamp;
-//!            stampsElapsed = tStampStatusArrived - tStampPacketSent;  // elapsed milliseconds between sms transmission and status response
-//!            
-//!            // is status good? (zero is good, non-zero is error)
-//!            if (cmdstatus)  // error
-//!            {
-//!               // here we should evaluate whether retry is possible
-//!               // leave that for some future day
-//!               // just free both packets and loop again
-//!#if __DEBUG_XBEE_API || __DEBUG_XBEE_API_PKT
-//!               if (dbpEnabled(LEV3))
-//!               {
-//!                  printf(dpo, "\r\n");
-//!                  printf(dpo, "%s\r\n", fortyBucks);
-//!                  printf(dpo, "%s\r\n", fortyBucks);
-//!                  printf(dpo, "$$$$$ packetsMatch() potential retry here  %s\r\n", stringTheDateTimeUptime());
-//!                  if (stampsElapsed > 0)  // what we expect to occur
-//!                  {
-//!                     printf(dpo, "$$$$$ elapsed time [%ld]:%s\r\n", stampsElapsed, stringTheUptime(stampsElapsed));
-//!                  }
-//!                  else if (stampsElapsed == 0)  // what might possibly occur
-//!                  {
-//!                     printf(dpo, "$$$$$ packets have equal timestamps\r\n");
-//!                  }
-//!                  else  // impossible for status to occur before the packet gets sent
-//!                  {
-//!                     printf(dpo, "$$$$$ packet timestamps have invalid relationship tx [%lu] rx [%lu]\r\n", tStampPacketSent, tStampStatusArrived);
-//!                  }
-//!                  packetInfoDisplay(sptr);  // display information about this status packet
-//!                  printf(dpo, "%s\r\n", fortyBucks);
-//!                  printf(dpo, "%s\r\n", fortyBucks);
-//!               }
-//!#endif
-//!               xbfree(sptr);
-//!               xbfree(pptr);
-//!               continue;
-//!            }
-//!            else  // good status, free both packets and keep looping
-//!            {
-//!#if __DEBUG_XBEE_API || __DEBUG_XBEE_API_PKT
-//!               if (dbpEnabled(LEV3))
-//!               {
-//!                  printf(dpo, "\r\n*** packetsMatch() matching sms/status packets removed  %s\r\n", stringTheDateTimeUptime());
-//!                  packetInfoDisplay(sptr);  // display information about this status packet
-//!                  packetInfoDisplay(pptr);  // display information about this message packet
-//!                  if (stampsElapsed > 0)  // what we expect to occur
-//!                  {
-//!                     printf(dpo, "*** elapsed time [%ld]:%s\r\n", stampsElapsed, stringTheUptime(stampsElapsed));
-//!                  }
-//!                  else if (stampsElapsed == 0)  // what might possibly occur
-//!                  {
-//!                     printf(dpo, "*** packets have equal timestamps\r\n");
-//!                  }
-//!                  else  // impossible for status to occur before the packet gets sent
-//!                  {
-//!                     printf(dpo, "*** packet timestamps have invalid relationship tx [%lu] rx [%lu]\r\n", tStampPacketSent, tStampStatusArrived);
-//!                  }
-//!               }
-//!#endif
-//!               xbfree(sptr);
-//!               xbfree(pptr);
-//!               continue;
-//!            }
-//!         }
-//!         else  // there is no pending transmit frame matching current status frame
-//!         {
-//!#if __DEBUG_XBEE_API || __DEBUG_XBEE_API_PKT
-//!            if (dbpEnabled(LEV3))
-//!            {
-//!               printf(dpo, "\r\n*** packetsMatch() no matching sms packets  %s\r\n", stringTheDateTimeUptime());
-//!               packetInfoDisplay(sptr);  // display information about this status packet
-//!            }
-//!#endif
-//!            xbfree(sptr);  // free up the status buffer
-//!            continue;  // loop again consuming status packets
-//!         }
-//!         
-//!         
-//!      }
-//!      else  // no queued packets, ???
-//!      {
-//!#if __DEBUG_XBEE_API || __DEBUG_XBEE_API_PKT
-//!         if (dbpEnabled(LEV3))
-//!         {
-//!            printf(dpo, "\r\n*** packetsMatch() no pending sms packets  %s\r\n", stringTheDateTimeUptime());
-//!            packetInfoDisplay(sptr);  // display information about this status packet
-//!         }
-//!#endif
-//!         xbfree(sptr);  // free up the status buffer
-//!         continue;  // loop again consuming status packets
-//!      }
    
 }
 
@@ -518,6 +397,7 @@ void packetsProcess()
                   //
                   if ((fptr->fmatcr.commandCh1 == 'D') && (fptr->fmatcr.commandCh2 == 'B'))
                   {
+                     responseRSSIpending = FALSE;  // good or bad, not waiting for RSSI response anymore
                      x = dbAtRsp->respb[0];  // this is the value from the response packet, check it for validity
                      if (cmdstatus == 0)  // check response value
                      {

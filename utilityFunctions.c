@@ -391,38 +391,125 @@ dbpr_code exchangeDebugPrintLevel(dbpr_code newDbprCode)
 //
 // functions to form phone number strings combining the country code prefix and phone number
 //
+// if the first field of the country code prefix is the number '0', use only that string as the prefix.
+// if the first field of the country code prefix is the character '-', omit the prefix string component of the result.
+// in all other cases prefix the country code string with the character '+', then copy the supplied string.
+//
+// in the unlikely event that the string length is zero, or 0xFF, omit the prefix string component of the result. <-- SKIP THIS
+//
 
+//
+// parameter values are offsets into the NVram storage array for the corresponding strings or numbers.
+//
+BYTE *formCompleteCellNumber(int PHNUM, int PHLEN, int CCSTR, int CCLEN)
+{
+   BYTE *sptr = phoneNumberFormationBuffer;  // destination pointer
+   BYTE scratch1, scratch2;
+   enum idctype {
+      NO_IDC, IDC_NO_PLUS, IDC_WITH_PLUS
+   } ;
+   idctype handleIdc = NO_IDC;
+   
+   scratch1 = CFG_NVMshadow[cfg_cur][CCLEN];  // nominal length of IDC string field
+   scratch2 = CFG_NVMshadow[cfg_cur][CCSTR];  // first character of IDC string field
+   
+   if((scratch1 == 0) || (scratch1 == 0xFF))  // length field error, no IDC possible
+   {
+      handleIdc = NO_IDC;
+   }
+   else if(scratch2 == '-')  // initial character '-' means no IDC
+   {
+      handleIdc = NO_IDC;
+   }
+   else if(scratch2 == '0')  // initial character '0' means use IDC without prefix plus
+   {
+      handleIdc = IDC_NO_PLUS;
+   }
+   else  // use IDC with prefix plus
+   {
+      handleIdc = IDC_WITH_PLUS;
+   }
+   
+   // assemble the complete string according to what was decided above.
+   // returned string must be null-terminated.
+   
+   switch (handleIdc)  // switch is used for sequencing, falls through without breaks until the end
+   {
+      case IDC_WITH_PLUS:
+         *sptr++ = '+';  //  supply the plus prefix
+         // fall into the next case
+      
+      case IDC_NO_PLUS:
+         memcpy(sptr, &CFG_NVMshadow[cfg_cur][CCSTR], CFG_NVMshadow[cfg_cur][CCLEN]);  // add the country code string
+         sptr += CFG_NVMshadow[cfg_cur][CCLEN];  // advance pointer to reflect current buffer contents
+         // fall into the next case
+      
+      default:  // can't think we really need this one, but here it is anyway
+      case NO_IDC:
+         memcpy(sptr, &CFG_NVMshadow[cfg_cur][PHNUM], CFG_NVMshadow[cfg_cur][PHLEN]);  // add the phone number string
+         sptr += CFG_NVMshadow[cfg_cur][PHLEN];  // advance pointer to reflect current buffer contents
+         *sptr = 0;  // destination must be null-terminated string, so supply terminator
+      break;
+   }
+   
+   return phoneNumberFormationBuffer;
+}
+
+//BYTE *formCompleteCellNumber(int PHNUM, int PHLEN, int CCSTR, int CCLEN)
 
 BYTE *formCompletePrimaryNumber()
 {
-   phoneNumberFormationBuffer[0] = '\0';  // null string for destination, so we can use concatenation everywhere
+   return formCompleteCellNumber(PRPHNUM, PRPHLEN, PRPHCCD, PRCCLEN);
    
-   if (CFG_NVMshadow[cfg_cur][PRCCLEN] > 0)  // country code string is not empty and not disabled
-   {
-      // a counry code has been supplied, combine with the number string in scratch buffer
-      strcatb(phoneNumberFormationBuffer, &CFG_NVMshadow[cfg_cur][PRPHCCD]);  // add the country code string
-   }
-
-   strcatb(phoneNumberFormationBuffer, &CFG_NVMshadow[cfg_cur][PRPHNUM]);  // add the phone number string
-   return phoneNumberFormationBuffer;
+//!   BYTE *sptr = phoneNumberFormationBuffer;  // destination pointer
+//!   
+//!   if (CFG_NVMshadow[cfg_cur][PRCCLEN] > 0)  // country code string is not empty
+//!   {
+//!      BYTE firstChar = CFG_NVMshadow[cfg_cur][PRPHCCD];
+//!      if (firstChar != '-')  // if first character is '-', do not add country code element
+//!      {
+//!         if (firstChar != '0')  // if first char is '0', add the country code string without prefix
+//!         {
+//!            *sptr++ = '+';  //  otherwise supply the plus prefix
+//!         }
+//!         // a counry code has been supplied, combine with the number string in scratch buffer
+//!         memcpy(sptr, &CFG_NVMshadow[cfg_cur][PRPHCCD], CFG_NVMshadow[cfg_cur][PRCCLEN]);  // add the country code string
+//!         sptr += CFG_NVMshadow[cfg_cur][PRCCLEN];  // advance pointer to reflect current buffer contents
+//!      }
+//!   }
+//!
+//!   memcpy(sptr, &CFG_NVMshadow[cfg_cur][PRPHNUM], CFG_NVMshadow[cfg_cur][PRPHLEN]);  // add the phone number string
+//!   sptr += CFG_NVMshadow[cfg_cur][PRPHLEN];  // advance pointer to reflect current buffer contents
+//!   *sptr = 0;  // destination must be null-terminated string, so supply terminator
+//!   return phoneNumberFormationBuffer;
 }
-
-// 0xff
 
 BYTE *formCompleteSecondaryNumber()
 {
-   phoneNumberFormationBuffer[0] = '\0';  // null string for destination, so we can use concatenation everywhere
+   return formCompleteCellNumber(SEPHNUM, SEPHLEN, SEPHCCD, SECCLEN);
    
-   if (CFG_NVMshadow[cfg_cur][SECCLEN] > 0)  // country code string is not empty and not disabled
-   {
-      // a counry code has been supplied, combine with the number string in scratch buffer
-     strcatb(phoneNumberFormationBuffer, &CFG_NVMshadow[cfg_cur][SEPHCCD]);  // add the country code string
-   }
-
-   strcatb(phoneNumberFormationBuffer, &CFG_NVMshadow[cfg_cur][SEPHNUM]);  // add the phone number string
-   return phoneNumberFormationBuffer;
+//!   BYTE *sptr = phoneNumberFormationBuffer;  // destination pointer
+//!   
+//!   if (CFG_NVMshadow[cfg_cur][SECCLEN] > 0)  // country code string is not empty
+//!   {
+//!      BYTE firstChar = CFG_NVMshadow[cfg_cur][SEPHCCD];
+//!      if (firstChar != '-')  // if first character is '-', do not add country code element
+//!      {
+//!         if (firstChar != '0')  // if first char is '0', add the country code string without prefix
+//!         {
+//!            *sptr++ = '+';  //  otherwise supply the plus prefix
+//!         }
+//!         // a counry code has been supplied, combine with the number string in scratch buffer
+//!         memcpy(sptr, &CFG_NVMshadow[cfg_cur][SEPHCCD], CFG_NVMshadow[cfg_cur][SECCLEN]);  // add the country code string
+//!         sptr += CFG_NVMshadow[cfg_cur][SECCLEN];  // advance pointer to reflect current buffer contents
+//!      }
+//!   }
+//!
+//!   memcpy(sptr, &CFG_NVMshadow[cfg_cur][SEPHNUM], CFG_NVMshadow[cfg_cur][SEPHLEN]);  // add the phone number string
+//!   sptr += CFG_NVMshadow[cfg_cur][SEPHLEN];  // advance pointer to reflect current buffer contents
+//!   *sptr = 0;  // destination must be null-terminated string, so supply terminator
+//!   return phoneNumberFormationBuffer;
 }
-
 
 
 
@@ -493,7 +580,8 @@ void *stringTheUptime(U32 uptimeNow=0xFFFFFFFF)  // default input means read the
 }
 
 
-// small functions to form date/time or date/time/uptime strings from the RTCC.
+// small functions to form date/time or date/time/uptime strings from
+// the auto-magically updated global memory fields.
 // no leading spaces, no CRLF
 //
 BYTE *stringTheDateAndTime()
@@ -660,21 +748,25 @@ void maintainLCD(BOOLEAN FormTodTopLine=TRUE)
 }
 
 
+// fetch the current date/time values from PIC RTC into the common structure 'datetime'.
+// compute and set all the individual BCD values.
+//
+// I *THINK* this is a task-level process that may be called from task level any time
+//
 void maintainDateTimeValues()
 {
-   // fetch the current date/time values from PIC RTC into the common structure 'datetime'.
-   // compute and set all the individual BCD values.
-   rtc_read(&datetime);  // set the running date & time structure
-   //dateTimeNeedsUpdate = FALSE;  // show we did this <-- done by the caller
-   SecondBin = datetime.tm_sec;
-   SecondBCD = hex2bcd(SecondBin);  // compute the separate values based on structure just obtained
-   MinuteBin = datetime.tm_min;
-   MinuteBCD = hex2bcd(MinuteBin);
-   HourBin = datetime.tm_hour;
-   HourBCD = hex2bcd(HourBin);
-   DayBCD = hex2bcd(datetime.tm_mday);
-   MonthBCD = hex2bcd(datetime.tm_mon);
-   YearBCD = hex2bcd(datetime.tm_year);
+//!   rtc_read(&datetime);  // set the running date & time structure
+//!   //dateTimeNeedsUpdate = FALSE;  // show we did this <-- done by the caller
+//!   SecondBin = datetime.tm_sec;
+//!   SecondBCD = hex2bcd(SecondBin);  // compute the separate values based on structure just obtained
+//!   MinuteBin = datetime.tm_min;
+//!   MinuteBCD = hex2bcd(MinuteBin);
+//!   HourBin = datetime.tm_hour;
+//!   HourBCD = hex2bcd(HourBin);
+//!   DayBCD = hex2bcd(datetime.tm_mday);
+//!   MonthBCD = hex2bcd(datetime.tm_mon);
+//!   YearBCD = hex2bcd(datetime.tm_year);
+
    // check for hour and minute and second zero crossings
    if (LastHourBin != HourBin )  // hour value changed this time
    {
@@ -1811,9 +1903,9 @@ BOOLEAN checkHostConnection()
 void BigLoopMaintenance(BOOLEAN immediate=FALSE)
 {
    // check if updating of the common date/time values is required now
-   if ((immediate) || (dateTimeNeedsUpdate))
+   if ((immediate) || (BigLoopPeriodicUpdate))
    {
-      dateTimeNeedsUpdate = FALSE;  // clear this flag
+      BigLoopPeriodicUpdate = FALSE;  // clear this flag
       maintainDateTimeValues();  // actually do it
    }      
    
